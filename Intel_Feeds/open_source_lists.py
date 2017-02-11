@@ -92,9 +92,9 @@ def master_feed (malcode,zeus,locky,bambenek):
 				#print ('value = ', value)
 				#print ('type in masterfeed = ', masterfeed[k][0]['Type'])
 				#print ('type in feed = ', feed[k][0]['Type'])
-				type = masterfeed[k][0]['Type'] + feed[k][0]['Type']
+				types = masterfeed[k][0]['Type'] + feed[k][0]['Type']
 				intel = masterfeed[k][0]['IntelSource'] + feed[k][0]['IntelSource']
-				masterfeed[k][0]['Type'] = type
+				masterfeed[k][0]['Type'] = types
 				masterfeed[k][0]['IntelSource'] = intel
 				#print (masterfeed[k])
 				#input()
