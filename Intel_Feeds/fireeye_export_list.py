@@ -1,6 +1,6 @@
-import sys
+#import sys
 import re
-import datetime
+#import datetime
 import csv
 
 ############################ GLOBAL VARIABLES  ########################################
@@ -19,11 +19,12 @@ etpfile = "./alerts.csv"
 ## Malware Comunication IP(15),Malware Communication Countries(16),Email Status(17),Threat Type(18),Risk Level(19)
 ############################################################################################################################
 
-def readETP():
+def readETP(etpfile):
+	file = etpfile
 	etpalerts = {}
 	info = []
 	try: 
-		with open(etpfile, 'r') as f:
+		with open(file, 'r') as f:
 			reader = csv.reader(f)
 			for line in reader:
 				if line[7] in ['doc','exe','zip','jar','htm','7zip','com','pdf','docx','xls','xlsx','js','vbs']:

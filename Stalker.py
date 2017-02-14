@@ -77,11 +77,11 @@ ________________________________________________________________________________
 
 
 if __name__ == '__main__':
-	#main()
+	main()
 	#print (Updatedb.basic_intel())
 	#masterfeed = feed.fetch_feeds()
-	for key, value in feeds.fetch_feeds().items():
-		print ('IP = ', key)
-		print ('Intel = ', value)
+	#for key, value in feeds.fetch_feeds().items():
+	#	print ('IP = ', key)
+	#	print ('Intel = ', value)
 	#print (feeds.fetch_feeds())
 
