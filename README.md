@@ -11,3 +11,4 @@ Dependencies:
 - MongoDB
 - pyMongo
 - Critical Stack (account and client)
+- Bro IDS (Optional)
