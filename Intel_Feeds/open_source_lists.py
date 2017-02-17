@@ -39,7 +39,7 @@ def zeus_feed( url ):
 		for line in feed:
 			ip = re.match(ipPattern,(line.strip().decode('utf-8')))
 			if ip:
-				zeus[ip.group(0)] = [{ 'Type' : ['Intel::ADDR'], 'IntelSource' : ['ZeuS Tracker'], 'Date' : today}]
+				zeus[ip.group(0)] = [{ 'Type' : 'Intel::ADDR', 'IntelSource' : ['ZeuS Tracker'], 'Date' : today}]
 	except Exception as e: print ("Something went wrong fetching ZeuS tracker list\n", e)
 	return (zeus)
 #####################################################################################
@@ -52,7 +52,7 @@ def locky_feed( url ):
                 for line in feed:
                         ip = re.match(ipPattern,(line.strip().decode('utf-8')))
                         if ip:
-                                locky[ip.group(0)] = [{ 'Type' : ['Intel:ADDR'], 'IntelSource' : ['Ransomware Tracker'], 'Date' : today}]
+                                locky[ip.group(0)] = [{ 'Type' : 'Intel:ADDR', 'IntelSource' : ['Ransomware Tracker'], 'Date' : today}]
         except Exception as e: print ("Something went wrong fetching Locky C2 list\n", e)
         return (locky)
 #####################################################################################
@@ -65,7 +65,7 @@ def bambenek_feed ( url ):
 		for line in feed:
 			ip = re.match(ipPattern,(line.strip().decode('utf-8')))
 			if ip:
-				bambenek[ip.group(0)] = [{ 'Type' : ['Intel:ADDR'], 'IntelSource' : ['Bambenek'], 'Date' : today}]
+				bambenek[ip.group(0)] = [{ 'Type' : 'Intel:ADDR', 'IntelSource' : ['Bambenek'], 'Date' : today}]
 	except Exception as e: print ("Something went wrong fetching Bambenek list\n", e)
 	return (bambenek)
 ########################################################################################

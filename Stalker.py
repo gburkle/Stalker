@@ -2,6 +2,7 @@
 import sys, os
 import json
 from  Intel_Feeds import open_source_lists as feeds
+from Database import updateDatabase as dbupdate
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
@@ -14,8 +15,8 @@ def main():
 
 	while choise != 4:
 		if choise == 1:
-			print (choise)
-			print (feeds.fetch_feeds())
+			#print ("Update Database\n")
+			dbupdate.dbUpdate_opensourcelists()
 			input()
 		elif choise == 2:
 			print (choise)
@@ -61,7 +62,7 @@ ________________________________________________________________________________
  `Y8888P ,88P'       8 8888       .8'       `8. `88888. 8 888888888888 8 8888     `Y8. 8 888888888888 8 8888     `88.
 ________________________________________________________________________________________________________________________
 
-[1] option 1
+[1] Update Database.
 [2] option 2
 [3] option 3
 
