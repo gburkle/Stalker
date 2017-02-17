@@ -26,7 +26,7 @@ def malcode_feed( url ):
 		for line in feed:
 			ip = re.match(ipPattern,(line.strip().decode('utf-8')))
 			if ip:
-				malcode[ip.group(0)] = [{'Type' : ['Malware'], 'IntelSource' : ['Malc0de'], 'Date' : today}]
+				malcode[ip.group(0)] = [{'Type' : ['Intel:ADDR'], 'IntelSource' : ['Malc0de'], 'Date' : today}]
 	except Exception as e: print ("Something went wrong fetching Malc0de Blacklist\n", e)
 	return (malcode)
 ####################################################################################
@@ -39,7 +39,7 @@ def zeus_feed( url ):
 		for line in feed:
 			ip = re.match(ipPattern,(line.strip().decode('utf-8')))
 			if ip:
-				zeus[ip.group(0)] = [{ 'Type' : ['ZeuS'], 'IntelSource' : ['ZeuS Tracker'], 'Date' : today}]
+				zeus[ip.group(0)] = [{ 'Type' : ['Intel::ADDR'], 'IntelSource' : ['ZeuS Tracker'], 'Date' : today}]
 	except Exception as e: print ("Something went wrong fetching ZeuS tracker list\n", e)
 	return (zeus)
 #####################################################################################
@@ -52,7 +52,7 @@ def locky_feed( url ):
                 for line in feed:
                         ip = re.match(ipPattern,(line.strip().decode('utf-8')))
                         if ip:
-                                locky[ip.group(0)] = [{ 'Type' : ['Locky'], 'IntelSource' : ['Ransomware Tracker'], 'Date' : today}]
+                                locky[ip.group(0)] = [{ 'Type' : ['Intel:ADDR'], 'IntelSource' : ['Ransomware Tracker'], 'Date' : today}]
         except Exception as e: print ("Something went wrong fetching Locky C2 list\n", e)
         return (locky)
 #####################################################################################
@@ -65,7 +65,7 @@ def bambenek_feed ( url ):
 		for line in feed:
 			ip = re.match(ipPattern,(line.strip().decode('utf-8')))
 			if ip:
-				bambenek[ip.group(0)] = [{ 'Type' : ['C&C'], 'IntelSource' : ['Bambenek'], 'Date' : today}]
+				bambenek[ip.group(0)] = [{ 'Type' : ['Intel:ADDR'], 'IntelSource' : ['Bambenek'], 'Date' : today}]
 	except Exception as e: print ("Something went wrong fetching Bambenek list\n", e)
 	return (bambenek)
 ########################################################################################
@@ -92,9 +92,9 @@ def master_feed (malcode,zeus,locky,bambenek):
 				#print ('value = ', value)
 				#print ('type in masterfeed = ', masterfeed[k][0]['Type'])
 				#print ('type in feed = ', feed[k][0]['Type'])
-				types = masterfeed[k][0]['Type'] + feed[k][0]['Type']
+				#types = masterfeed[k][0]['Type'] + feed[k][0]['Type']
 				intel = masterfeed[k][0]['IntelSource'] + feed[k][0]['IntelSource']
-				masterfeed[k][0]['Type'] = types
+				#masterfeed[k][0]['Type'] = types
 				masterfeed[k][0]['IntelSource'] = intel
 				#print (masterfeed[k])
 				#input()

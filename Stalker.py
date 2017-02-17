@@ -15,6 +15,7 @@ def main():
 	while choise != 4:
 		if choise == 1:
 			print (choise)
+			print (feeds.fetch_feeds())
 			input()
 		elif choise == 2:
 			print (choise)
