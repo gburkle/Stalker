@@ -3,7 +3,9 @@ Threat Intel and Incident Reponse
 
 ** WORK VERY MUCH IN PROGRESS **
 
-Developed for Ubuntu Linux
+Development:
+- Linux
+- Python3
 
 Dependencies:
 - MongoDB
