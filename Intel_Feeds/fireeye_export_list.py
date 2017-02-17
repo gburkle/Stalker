@@ -6,7 +6,7 @@ import csv
 ############################ GLOBAL VARIABLES  ########################################
 
 ipPattern = re.compile('\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}')  # Match IP address RegEx
-etpfile = "./alerts.csv"
+#etpfile = "./alerts.csv"
 
 ############################ IMPORT FireEye ETC CVS alerts ##########################
 
@@ -23,18 +23,26 @@ def readETP(etpfile):
 	file = etpfile
 	etpalerts = {}
 	info = []
+	
 	try: 
 		with open(file, 'r') as f:
 			reader = csv.reader(f)
+			
 			for line in reader:
-				if line[7] in ['doc','exe','zip','jar','htm','7zip','com','pdf','docx','xls','xlsx','js','vbs']:
+				if not line:
+					continue
+				elif (str(line).startswith('Alert')):
+					continue
+				elif line[7] in ['doc','exe','zip','jar','htm','7zip','com','pdf','docx','xls','xlsx','js','vbs']:
 					info = { 'Time' : line[2]}, { 'From' : line[3]}, { 'Recipients' : line[4]}, { 'Subject' : line[5]}, { 'Type' : line[7] }, { 'Name' : line[8] }, { 'MD5' : line[9] }, { 'evilips' : [line[15]] }
 				else:
 					info = { 'Time' : line[2]}, { 'From' : line[3]}, { 'Recipients' : line[4]}, { 'Subject' : line[5]}, { 'Type' : 'url' }, { 'Name' : line[8] }, { 'MD5' : 'Unknown' }, { 'evilips' : [line[15]] }
 				etpalerts.update({line[0] : info})
 	except Exception as e: print ("Can't open ETP alerts file\n", e)
+	
 	f.close()
 	return (etpalerts)
 
 if __name__ == '__main__':
-	print (readETP())
+	pass
+	#print (readETP())

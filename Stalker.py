@@ -16,8 +16,8 @@ def main():
 	while choise != 4:
 		if choise == 1:
 			#print ("Update Database\n")
-			dbupdate.dbUpdate_opensourcelists()
-			input()
+			cls()
+			dbupdate.dbMenu()
 		elif choise == 2:
 			print (choise)
 			input()
@@ -35,12 +35,12 @@ def main():
 ##############################################################################################################################
 
 def cls(): 
-	try:
-		os.system('cls') # For windows
-	except Exception as e: return
+	#try:
+	#	os.system('cls') # For windows
+	#except Exception as e: return
 	try:
 		os.system('clear') # For Linux
-	except Exception as e: return
+	except Exception: return
 
 ##############################################################################################################################
 
