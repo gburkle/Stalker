@@ -10,5 +10,5 @@ Development:
 Dependencies:
 - MongoDB
 - pyMongo
-- Critical Stack (account and client)
+- Critical Stack - Account and client (Optional)
 - Bro IDS (Optional)
