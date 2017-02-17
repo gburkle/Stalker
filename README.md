@@ -3,5 +3,8 @@ Threat Intel and Incident Reponse
 
 ** WORK VERY MUCH IN PROGRESS **
 
-Dependencies: 
-MongoDB, pyMongo
+Dependencies:
+- Ubuntu Linux
+- MongoDB
+- pyMongo
+- Critical Stack (account and client)
