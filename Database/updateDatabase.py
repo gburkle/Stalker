@@ -9,6 +9,7 @@ from  Intel_Feeds import open_source_lists as feeds
 from Intel_Feeds import fireeye_export_list as fireeye
 
 from pymongo import MongoClient
+#from bson.objectid import ObjectId
 #from pprint import pprint
 
 # ======MongoDB connection to intelFeeds Collection================
@@ -87,45 +88,94 @@ def dbUpdate_opensourcelists():
                 pass
             else:
                 try:
-                    data = {'indicator': key, 'type': value[0]['Type'], 'intelsource': value[0]['IntelSource'], 'date': value[0]['Date'], 'notes':''}
+                    data = {'indicator': key, 'type': value['Type'], 'intelsource': value['IntelSource'], 'date': value['Date'], 'notes':['']}
                     coll.insert(data)
                     stats += 1
                 except Exception as e: print(key, " could not be inserted into the database!!", e)
             
-        #print ("\n", stats, " new records were inserted.\n")             
+                     
     except Exception as e: print("Could not update database with Open Source Lists information", e)
     
     if stats == 0:
         print ("\n")
-        print ("No information was inserted into the database. ¯\_(ツ)_/¯ \n")
+        print ("No information was inserted into the Intel Feeds database. ¯\_(ツ)_/¯ \n")
     else:
         print ("\n")
         print (stats, "new records were inserted into the database from open source lists (Malc0de, Zeus Tracker, Locky and Bambenek).\n")
         
-    #cursor = coll.find({})
-    #for document in cursor:
-    #    pprint(document)
+    
 #=============================================================================================================================================================
 # Read FireEye ETP CSV alerts file with structure:
 # Alert ID,Message ID,Date & Time,From,Recipients,Subject,Malware Type,Malware File Type,Malware Name,Malware MD5,Malware Analysis Application,\
 # Malware Analysis OS,Virus Total,Source IP,Source Country,Malware Comunication IP,Malware Communication Countries,Email Status,Threat Type,Risk Level
 #
 # This creates a separate FireEye ETP database in MongoDB and updates intelFeeds database with IOCs from the file. 
+# It uses "Intel_Feeds\fireeye_export_list.py" to generate the dictionary list used to update databases. 
 
+## Dictionary name: etpalerts.
+## Key = ETP Alert number
+## Value = { Time, From, Recipients, Subject, Type, Name "name of the binary file, or full URL", MD5, evilips[] }
 
 def dbUpdate_FireeyeETP():
     
+    coll = dbConnect2()
+    stats = 0
     file = input("Enter the name of the file containing ETP alerts in CSV form. (Include absolute path if file is not in Stalker folder): ")
     
     if os.path.exists(file):
         etpalerts = fireeye.readETP(file)
-        try:        
+        try:
+            print("\n")
+            print("Updating FireEye ETP database....")        
             for key, value in etpalerts.items():
-                print (key)
-                print (value)
-        except Exception as e: print ("Something went terribly wrong!", e) 
+                if coll.find({'alert': key}).count() > 0:
+                    #print ("Alert already in database")
+                    #print (key)
+                    #print (value)
+                    pass
+                else:
+                    data = {'alert': key, 'time': value['Time'], 'from': value['From'], 'recipients':value['Recipients'], 'subject':value['Subject'], 'type':value['Type'], 'name':value['Name'], 'md5':value['MD5'], 'evilips':value['evilips'] }
+                    #print (data)
+                    coll.insert(data)
+                    stats += 1
+                    
+        except Exception as e: print ("Something went wrong while updating FireEye ETP database!", e) 
         
-    else:
+        if stats == 0:
+            print ("\n")
+            print ("Nothing new found. No information was inserted into the database. ¯\_(ツ)_/¯ \n")
+        else:
+            print ("\n")
+            print (stats, "new records were inserted into the database from the FireEye ETP alerts file.\n")
+            
+## End of importing data from alerts file into FireETP database.
+## Next we will use the same information to update Intel Feeds database with ETP information.             
+            
+        try:
+            print("\n")
+            print("Updating Intel Feed database with ETP information.....")
+            stats = 0
+            
+            for key, value in etpalerts.items():
+                if 1 == 1:
+                    pass
+                   #print (key)
+                   #print (value)
+                else:
+                    pass
+            
+            
+        except Exception as e: print ("Something went wrong while updating Intel Feeds database with ETP information.", e)   
+        
+        if stats == 0:
+            print ("\n")
+            print ("Nothing new found. No information was inserted into the database. ¯\_(ツ)_/¯ \n")
+        else:
+            print ("\n")
+            print (stats, "new records were inserted into the Intel Feeds database from the FireEye ETP alerts file.\n")
+            
+             
+    else: # End of "if os.path.exists"
         print ("File not found. Make sure the file is on the Stalker folder, or use absolute path.\n")
      
     
