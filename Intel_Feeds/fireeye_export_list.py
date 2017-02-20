@@ -34,9 +34,9 @@ def readETP(etpfile):
 				elif (str(line).startswith('Alert')):
 					continue
 				elif line[7] in ['doc','exe','zip','jar','htm','7zip','com','pdf','docx','xls','xlsx','js','vbs']:
-					info = { 'Time' : line[2]}, { 'From' : line[3]}, { 'Recipients' : line[4]}, { 'Subject' : line[5]}, { 'Type' : line[7] }, { 'Name' : line[8] }, { 'MD5' : line[9] }, { 'evilips' : [line[15]] }
+					info = { 'Time' : line[2],  'From' : line[3],  'Recipients' : line[4],  'Subject' : line[5], 'Type' : line[7] ,  'Name' : line[8] ,  'MD5' : line[9] ,  'evilips' : [line[15]] }
 				else:
-					info = { 'Time' : line[2]}, { 'From' : line[3]}, { 'Recipients' : line[4]}, { 'Subject' : line[5]}, { 'Type' : 'url' }, { 'Name' : line[8] }, { 'MD5' : 'Unknown' }, { 'evilips' : [line[15]] }
+					info = { 'Time' : line[2],  'From' : line[3],  'Recipients' : line[4], 'Subject' : line[5],  'Type' : 'url' ,  'Name' : line[8] ,  'MD5' : 'Unknown' ,  'evilips' : [line[15]] }
 				etpalerts.update({line[0] : info})
 	except Exception as e: print ("Can't open ETP alerts file\n", e)
 	
