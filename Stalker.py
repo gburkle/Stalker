@@ -1,7 +1,7 @@
 
 import sys, os
-import json
-from  Intel_Feeds import open_source_lists as feeds
+#import json
+#from  Intel_Feeds import open_source_lists as feeds
 from Database import updateDatabase as dbupdate
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
