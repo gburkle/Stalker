@@ -1,6 +1,10 @@
 
 import csv
 import urllib.parse
+import re
+
+### REGEX to find URL
+isitaurl = re.compile(r'(hxxp|hxxps://)') 
 
 
 ######################## MAIN FUNCTIONA RETURN ETP IMPORTED INFO AS DICTIONARY #############################################
@@ -21,18 +25,26 @@ def readETP(etpfile):
 			for line in reader:
 				if not line:
 					continue
-				#elif (str(line).startswith('Alert')):
-				#	print('HEADER LINE DETECTED')
 				elif line[7] in ['doc','exe','zip','jar','htm','7zip','com','pdf','docx','xls','xlsx','js','vbs','ace','rar', 'bz2','bz','docm'] or line[6] == 'Attachment':
 					info = { 'Time' : line[2],  'From' : line[3],  'Recipients' : line[4],  'Subject' : line[5], 'Type' : line[7] ,  'Name' : line[8] ,  'MD5' : line[9] ,  'evilips' : line[15] }
 				elif line[6] == 'URL':
 					url = urllib.parse.urlparse(line[8], scheme='hxxp|hxxps')
 					## url[1] contains domain / url[2] contains url path. The path is sent to database in the evilips field to maintain consistency of the dictionary array
 					info = { 'Time' : line[2],  'From' : line[3],  'Recipients' : line[4], 'Subject' : line[5],  'Type' : 'url' ,  'Name' : url[1] ,  'MD5' : 'N/A' ,  'evilips' : url[2] }
+				elif line[6] == 'Header':
+					continue
+					# Not sure what this is but it's causing Fauda!
+				elif re.match(isitaurl, line[8]):
+					# This will catch lines with no TYPE = URL (Hopefully)
+					url = urllib.parse.urlparse(line[8], scheme='hxxp|hxxps')
+					info = { 'Time' : line[2],  'From' : line[3],  'Recipients' : line[4], 'Subject' : line[5],  'Type' : 'url' ,  'Name' : url[1] ,  'MD5' : 'N/A' ,  'evilips' : url[2] }
 				else:
 					print ("Found a line I can't digest!! . >.<  I'm just going to drop it like it's hot!! \n")
-					print ("Remove this line and try again.\n")
-					print (line,"\n")
+					print ("Remove this line and try again. Alert ID: ", line[0])
+					print ("Name: ",line[8])
+					print ("Type: ",line[6])
+					print ("MD5: ", line[9])
+					print ("Subject: ", line[5])
 					break	
 					
 				etpalerts.update({line[0] : info})
