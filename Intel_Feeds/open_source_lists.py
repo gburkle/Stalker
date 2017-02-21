@@ -46,15 +46,15 @@ def zeus_feed( url ):
 
 ################## Locky Ransomeware C2 URL Blocklist#####################################
 def locky_feed( url ):
-        locky = {}
-        try:
-                feed = urllib.request.urlopen(url)
-                for line in feed:
-                        ip = re.match(ipPattern,(line.strip().decode('utf-8')))
-                        if ip:
-                                locky[ip.group(0)] = { 'Type' : 'Intel:ADDR', 'IntelSource' : ['Ransomware Tracker'], 'Date' : today}
-        except Exception as e: print ("Something went wrong fetching Locky C2 list\n", e)
-        return (locky)
+	locky = {}
+	try:
+		feed = urllib.request.urlopen(url)
+		for line in feed:
+			ip = re.match(ipPattern,(line.strip().decode('utf-8')))
+			if ip:
+				locky[ip.group(0)] = { 'Type' : 'Intel:ADDR', 'IntelSource' : ['Ransomware Tracker'], 'Date' : today}
+	except Exception as e: print ("Something went wrong fetching Locky C2 list\n", e)
+	return (locky)
 #####################################################################################
 
 ############ Bambenek Consulting Master Feed of known active C&C IPs ################
