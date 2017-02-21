@@ -1,13 +1,14 @@
 #import sys
-import re
+#import re
 #import datetime
 import csv
+import urllib.parse
 
 ############################ GLOBAL VARIABLES  ########################################
 
-ipPattern = re.compile('\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}')  # Match IP address RegEx
-#etpfile = "./alerts.csv"
-
+#ipPattern = re.compile('\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}')  # Match IP address RegEx
+#md5regex = re.compile(r'(?=([A-F0-9]{32}))') # Match MD5
+#urlregex = re.compile(r'hxxp[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+') # Match URL
 ############################ IMPORT FireEye ETC CVS alerts ##########################
 
 
@@ -33,10 +34,13 @@ def readETP(etpfile):
 					continue
 				elif (str(line).startswith('Alert')):
 					continue
-				elif line[7] in ['doc','exe','zip','jar','htm','7zip','com','pdf','docx','xls','xlsx','js','vbs']:
+				elif line[7] in ['doc','exe','zip','jar','htm','7zip','com','pdf','docx','xls','xlsx','js','vbs','ace','rar', 'bz2','bz','docm'] or line[6] == 'Attachment':
 					info = { 'Time' : line[2],  'From' : line[3],  'Recipients' : line[4],  'Subject' : line[5], 'Type' : line[7] ,  'Name' : line[8] ,  'MD5' : line[9] ,  'evilips' : [line[15]] }
-				else:
-					info = { 'Time' : line[2],  'From' : line[3],  'Recipients' : line[4], 'Subject' : line[5],  'Type' : 'url' ,  'Name' : line[8] ,  'MD5' : 'Unknown' ,  'evilips' : [line[15]] }
+				elif line[6] == 'URL':
+					url = urllib.parse.urlparse(line[8], scheme='hxxp|hxxps')
+					## url[1] contains domain / url[2] contains url path. The path is sent to database in the evilips field to maintain consistency of the dictionary array
+					info = { 'Time' : line[2],  'From' : line[3],  'Recipients' : line[4], 'Subject' : line[5],  'Type' : 'url' ,  'Name' : url[1] ,  'MD5' : 'N/A' ,  'evilips' : [url[2]] }
+					
 				etpalerts.update({line[0] : info})
 	except Exception as e: print ("Can't open ETP alerts file\n", e)
 	
@@ -44,5 +48,8 @@ def readETP(etpfile):
 	return (etpalerts)
 
 if __name__ == '__main__':
-	pass
-	#print (readETP())
+	etpfile = 'alerts'
+	readETP(etpfile)
+	#alerts = readETP(etpfile)
+	#for key, value in alerts.items():
+	#	print (value["Name"])
