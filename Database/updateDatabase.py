@@ -4,7 +4,7 @@ Created on Feb 16, 2017
 @author: tesoro
 '''
 import sys, os
-#import json
+import re
 from  Intel_Feeds import open_source_lists as feeds
 from Intel_Feeds import fireeye_export_list as fireeye
 
@@ -16,10 +16,10 @@ from pymongo import MongoClient
 def dbConnect():
     try:
         client = MongoClient()
-        db = client.intelFeeds
+        db = client.StalkerDB
         coll = db.opensourcelists
     except Exception as e: 
-        print ("Could not connect to the IntelFeeds Database", e)
+        print ("Could not connect to the Stalker Database \"Open Source Feeds Collection\"", e)
         sys.exit(0)
         
     return (coll)
@@ -29,10 +29,10 @@ def dbConnect():
 def dbConnect2():
     try:
         client = MongoClient()
-        db = client.fireeyeETP
+        db = client.StalkerDB
         coll = db.etpalerts
     except Exception as e:
-        print ("Coult not connect to the FireEye ETP Databese", e)
+        print ("Could not connect to the Stalker Database \"FireEye ETP Collection:\"", e)
         sys.exit(0)
         
     return (coll)
@@ -118,11 +118,14 @@ def dbUpdate_opensourcelists():
 
 def dbUpdate_FireeyeETP():
     
-    coll = dbConnect2()
+    coll = dbConnect2() # Connects to FireEye ETP database
+    coll2 = dbConnect() # Connect to Intel Feeds Database
+    
     stats = 0
     file = input("Enter the name of the file containing ETP alerts in CSV form. (Include absolute path if file is not in Stalker folder): ")
     
     if os.path.exists(file):
+        
         etpalerts = fireeye.readETP(file)
         try:
             print("\n")
@@ -150,30 +153,56 @@ def dbUpdate_FireeyeETP():
             
 ## End of importing data from alerts file into FireETP database.
 ## Next we will use the same information to update Intel Feeds database with ETP information.             
+
+## Key = ETP Alert number
+## Value = { Time, From, Recipients, Subject, Type, Name "name of the binary file, or full URL", MD5, evilips[] }
+
+## Now using coll2 to connect to Intel Feeds database
+
             
         try:
             print("\n")
             print("Updating Intel Feed database with ETP information.....")
-            stats = 0
+            statshash = 0
+            statsurls = 0
+            statsunknown = 0
             
             for key, value in etpalerts.items():
-                if 1 == 1:
-                    pass
-                   #print (key)
-                   #print (value)
+                if  value['Type'] == 'url':
+                    if coll2.find({'indicator':value['Name']}).count() > 0:
+                        pass
+                        # Value already in database
+                    else:
+                        # URL path comes as evilips for URLS from fireeye_export_list.py
+                        data = {'indicator':value['Name'], 'type':'Intel::URL', 'intelsource':'FireEye_ETP', 'data':value['Time'], 'notes':[key, value['evilips']]}
+                        coll2.insert(data)
+                        statsurls += 1
+                        #print (fullurl)
+                              
+                elif value['MD5'] !=  'N/A':
+                    if coll2.find({'indicator': value['MD5']}).count() > 0:
+                        pass
+                        # Value already in database
+                    else:
+                        data = {'indicator': value['MD5'], 'type': 'Intel::FILE_HASH', 'intelsource': 'FireEye_ETP', 'date': value['Time'], 'notes':[key, value['Name'], value['evilips']]}
+                        coll2.insert(data)
+                        statshash += 1
+                        #print (value)
                 else:
-                    pass
-            
+                    statsunknown += 1
             
         except Exception as e: print ("Something went wrong while updating Intel Feeds database with ETP information.", e)   
         
         if stats == 0:
             print ("\n")
             print ("Nothing new found. No information was inserted into the database. ¯\_(ツ)_/¯ \n")
+        elif statsunknown > 0:
+            print ("\n")
+            print ("%d New URLs, and %d new Hashes were inserted into the Intel Feeds database from the FireEye ETP alerts file.\n" % (statsurls, statshash))
+            print (statsunknown, " unknown records were ignored! ¬_¬ ")
         else:
             print ("\n")
-            print (stats, "new records were inserted into the Intel Feeds database from the FireEye ETP alerts file.\n")
-            
+            print ("%d New URLs, and %d new Hashes were inserted into the Intel Feeds database from the FireEye ETP alerts file.\n" % (statsurls, statshash))    
              
     else: # End of "if os.path.exists"
         print ("File not found. Make sure the file is on the Stalker folder, or use absolute path.\n")
