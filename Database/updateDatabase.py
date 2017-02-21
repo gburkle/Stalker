@@ -4,10 +4,10 @@ Created on Feb 16, 2017
 @author: tesoro
 '''
 import sys, os
-import re
+#import re
+import datetime
 from  Intel_Feeds import open_source_lists as feeds
 from Intel_Feeds import fireeye_export_list as fireeye
-
 from pymongo import MongoClient
 #from bson.objectid import ObjectId
 #from pprint import pprint
@@ -70,12 +70,13 @@ def dbMenu():
             
 
 # ================================================================================================================================================
-# Update MongoDB Database "IntelFeeds", Collection "opensourcelists" with information from Malc0de, Zeus Tracker, Locky and Bambenek
+# Update MongoDB Database "StalkerDB", Collection "opensourcelists" with information from Malc0de, Zeus Tracker, Locky and Bambenek
 
 def dbUpdate_opensourcelists():
     
     stats = 0
     coll = dbConnect()
+    
     
     print ("Downloading and inserting into the database information from open source lists (Malc0de, Zeus Tracker, Locky and Bambenek) ...\n")
     try:
@@ -109,7 +110,8 @@ def dbUpdate_opensourcelists():
 # Alert ID,Message ID,Date & Time,From,Recipients,Subject,Malware Type,Malware File Type,Malware Name,Malware MD5,Malware Analysis Application,\
 # Malware Analysis OS,Virus Total,Source IP,Source Country,Malware Comunication IP,Malware Communication Countries,Email Status,Threat Type,Risk Level
 #
-# This creates a separate FireEye ETP database in MongoDB and updates intelFeeds database with IOCs from the file. 
+# This creates a new collection on StalkerDB called "etpalerts" and puts all FiereEye ETP information on it.
+# It then opens StalkerDB "opensourcelists" collection and updates the collection with IOCs from the file. 
 # It uses "Intel_Feeds\fireeye_export_list.py" to generate the dictionary list used to update databases. 
 
 ## Dictionary name: etpalerts.
@@ -118,9 +120,10 @@ def dbUpdate_opensourcelists():
 
 def dbUpdate_FireeyeETP():
     
-    coll = dbConnect2() # Connects to FireEye ETP database
-    coll2 = dbConnect() # Connect to Intel Feeds Database
+    coll = dbConnect2() # Connects to StalkerDB.etpalerts
+    coll2 = dbConnect() # Connect to StalkerDB.opensourcelists
     
+    today = datetime.datetime.now().strftime("%m-%d-%Y")
     stats = 0
     file = input("Enter the name of the file containing ETP alerts in CSV form. (Include absolute path if file is not in Stalker folder): ")
     
@@ -129,20 +132,19 @@ def dbUpdate_FireeyeETP():
         etpalerts = fireeye.readETP(file)
         try:
             print("\n")
-            print("Updating FireEye ETP database....")        
+            print("Updating StalkerDB.etpalerts Collection....")        
             for key, value in etpalerts.items():
                 if coll.find({'alert': key}).count() > 0:
-                    #print ("Alert already in database")
-                    #print (key)
-                    #print (value)
+                    # Value already in database
                     pass
                 else:
-                    data = {'alert': key, 'time': value['Time'], 'from': value['From'], 'recipients':value['Recipients'], 'subject':value['Subject'], 'type':value['Type'], 'name':value['Name'], 'md5':value['MD5'], 'evilips':value['evilips'] }
-                    #print (data)
+                    data = {'alert': key, 'time': value['Time'], 'dbtime': today, 'from': value['From'], 'recipients':value['Recipients'], 'subject':value['Subject'], 'type':value['Type'], 'name':value['Name'], 'md5':value['MD5'], 'evilips':value['evilips']}
                     coll.insert(data)
                     stats += 1
                     
-        except Exception as e: print ("Something went wrong while updating FireEye ETP database!", e) 
+        except Exception as e: 
+            print ("Something went wrong while updating \"etpalerts\" collection!", e) 
+           
         
         if stats == 0:
             print ("\n")
@@ -157,12 +159,12 @@ def dbUpdate_FireeyeETP():
 ## Key = ETP Alert number
 ## Value = { Time, From, Recipients, Subject, Type, Name "name of the binary file, or full URL", MD5, evilips[] }
 
-## Now using coll2 to connect to Intel Feeds database
+## Now using coll2 to connect to opensourcelists collection on StalkerDB
 
             
         try:
             print("\n")
-            print("Updating Intel Feed database with ETP information.....")
+            print("Updating StalkerDB.opensourcelists with ETP information.....")
             statshash = 0
             statsurls = 0
             statsunknown = 0
@@ -174,24 +176,25 @@ def dbUpdate_FireeyeETP():
                         # Value already in database
                     else:
                         # URL path comes as evilips for URLS from fireeye_export_list.py
-                        data = {'indicator':value['Name'], 'type':'Intel::URL', 'intelsource':'FireEye_ETP', 'data':value['Time'], 'notes':[key, value['evilips']]}
-                        coll2.insert(data)
+                        data = {'indicator':value['Name'], 'type':'Intel::URL', 'intelsource':'FireEye_ETP', 'date':today, 'notes':[key, value['evilips']]}
+                        coll2.insert(data) #### Insert into the database
                         statsurls += 1
-                        #print (fullurl)
+                        
                               
                 elif value['MD5'] !=  'N/A':
                     if coll2.find({'indicator': value['MD5']}).count() > 0:
                         pass
                         # Value already in database
                     else:
-                        data = {'indicator': value['MD5'], 'type': 'Intel::FILE_HASH', 'intelsource': 'FireEye_ETP', 'date': value['Time'], 'notes':[key, value['Name'], value['evilips']]}
-                        coll2.insert(data)
+                        data = {'indicator': value['MD5'], 'type': 'Intel::FILE_HASH', 'intelsource': 'FireEye_ETP', 'date':today, 'notes':[key, value['Name'], value['evilips']]}
+                        coll2.insert(data) ### Insert into the database
                         statshash += 1
-                        #print (value)
+                        
                 else:
                     statsunknown += 1
             
-        except Exception as e: print ("Something went wrong while updating Intel Feeds database with ETP information.", e)   
+        except Exception as e: 
+            print ("Something went wrong while updating StalkerDb.opensourcelists collection with ETP information.", e)  
         
         if stats == 0:
             print ("\n")
