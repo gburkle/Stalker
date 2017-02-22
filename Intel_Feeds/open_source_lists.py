@@ -14,6 +14,7 @@ malcode_url = 'http://malc0de.com/bl/IP_Blacklist.txt'
 zeus_url = 'https://zeustracker.abuse.ch/blocklist.php?download=ipblocklist'
 locky_url = 'https://ransomwaretracker.abuse.ch/downloads/LY_C2_IPBL.txt'
 bambenek_url = 'http://osint.bambenekconsulting.com/feeds/c2-ipmasterlist-high.txt'
+emergingthreats_url = 'https://rules.emergingthreats.net/blockrules/compromised-ips.txt'
 
 today = datetime.datetime.now().strftime("%m-%d-%Y")
 
@@ -70,14 +71,24 @@ def bambenek_feed ( url ):
 	return (bambenek)
 ########################################################################################
 
-
+############ Emerging Threats Feed of known compromised IP addresses ##############
+def emerging_threats( url ):
+	et = {}
+	try:
+		feed = urllib.request.urlopen(url)
+		for line in feed:
+			ip = re.match(ipPattern,(line.strip().decode('utf-8')))
+			if ip:
+				et[ip.group(0)] = {'Type' : 'Intel::ADDR', 'IntelSource' : ['Emerging_Threats'], 'Date' : today}
+	except Exception as e: print ("Something went wrong fetching Emerging Threats list\n", e)
+	return (et)
 ################ BUILD A MASTER FEEDS COMBINING ALL ######################################
 
-def master_feed (malcode,zeus,locky,bambenek):
+def master_feed (malcode,zeus,locky,bambenek,et): ## ADD NEW FEEDS HERE AND IN THE FEED LIST DOWN BELOW
 	masterfeed = {}
 	masterfeed.clear()
 	
-	feeds = [malcode, zeus, locky, bambenek]
+	feeds = [malcode, zeus, locky, bambenek, et]
 
 	for feed in feeds:
 		#print (feed)
@@ -123,8 +134,12 @@ def fetch_feeds():
 	print ("\nFetching Bambenek Master feed of known C&C IP addresses .... ", end="")
 	bambenek = bambenek_feed( bambenek_url )
 	print ("[DONE]")
+	
+	print ("\nFetching Emerging Threats feed of Compromised IP addresses .... ", end="")
+	et = emerging_threats( emergingthreats_url )
+	print ("[DONE]")
 
-	return (master_feed(malcode,zeus,locky,bambenek))
+	return (master_feed(malcode,zeus,locky,bambenek,et))
 ##########################################################################################
 
 if __name__ == '__main__':
