@@ -1,25 +1,38 @@
 import sys, os
 import urllib.request
+#import urllib.parse
 import re
 import datetime
+#from progressbar import ProgressBar
 #import json
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
+###### ADD A NEW FEED ####################
+# 1 - Add url to global variables
+# 2 - Create feed collection function
+# 3 - Add a feed fetch
+# 4 - Add feed to master feed processing
 ############################## Global Variables #####################################
-
+### STEP ONE
 ipPattern = re.compile('\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}')  # Match IP address RegEx
+isComment = re.compile('#')
 
 malcode_url = 'http://malc0de.com/bl/IP_Blacklist.txt'
 zeus_url = 'https://zeustracker.abuse.ch/blocklist.php?download=ipblocklist'
 locky_url = 'https://ransomwaretracker.abuse.ch/downloads/LY_C2_IPBL.txt'
 bambenek_url = 'http://osint.bambenekconsulting.com/feeds/c2-ipmasterlist-high.txt'
 emergingthreats_url = 'https://rules.emergingthreats.net/blockrules/compromised-ips.txt'
+snorttalos_url = 'http://www.talosintelligence.com/feeds/ip-filter.blf'
+malwaredomains_url = 'http://mirror1.malwaredomains.com/files/immortal_domains.txt'
+maldomainlist_url = 'http://www.malwaredomainlist.com/hostslist/hosts.txt'
 
 today = datetime.datetime.now().strftime("%m-%d-%Y")
 
-
+################# FEED COLLECTION FUCTIONS ########################################
+### SETP TWO
 ############################# Malc0de Black List ###################################
+
 def malcode_feed( url ):
 	malcode = {}
 	try:
@@ -82,41 +95,111 @@ def emerging_threats( url ):
 				et[ip.group(0)] = {'Type' : 'Intel::ADDR', 'IntelSource' : ['Emerging_Threats'], 'Date' : today}
 	except Exception as e: print ("Something went wrong fetching Emerging Threats list\n", e)
 	return (et)
-################ BUILD A MASTER FEEDS COMBINING ALL ######################################
 
-def master_feed (malcode,zeus,locky,bambenek,et): ## ADD NEW FEEDS HERE AND IN THE FEED LIST DOWN BELOW
+##############################################################################################
+
+############## Snort Talos Intelligence #####################################################
+def snortTalos( url ):
+	snort = {}
+	try:
+		feed = urllib.request.urlopen(url)
+		for line in feed:
+			ip = re.match(ipPattern,(line.strip().decode('utf-8')))
+			if ip:
+				snort[ip.group(0)] = {'Type' : 'Intel::ADDR', 'IntelSource' : ['Snort_Talos'], 'Date' : today}
+	except Exception as e: print ("Something went wrong fetching Talos Intelligence Snort feed\n", e)
+	return (snort)
+
+##############################################################################################
+
+################ Immortal Malware Domains ###################################################
+def malwareDomains( url ):
+	maldomains = {}
+	#justurl = re.compile(r"b\'(.*)\\n\'")
+	try:
+		feed = urllib.request.urlopen(url)
+		for line in feed:
+			if re.match(isComment,(line.strip().decode('utf-8'))):
+				pass
+			else:
+				cleandomain = line.strip().decode('utf-8')
+				#cleandomain = re.match(justurl, domain).group(1)
+				#print (cleandomain)
+				maldomains[cleandomain] = {'Type' : 'Intel::DOMAIN', 'IntelSource' : ['MalwareDomains'], 'Date' : today}
+				#print(domain)
+				
+	except Exception as e: print ("Something went wrong fetching the Immortal list of Malware URLs feed\n", e)
+	return (maldomains)
+
+#################### Malware Domain List ################################################
+#
+def malDomainList( url ):
+#	pass
+	maldomaindic = {}
+	justurl = re.compile('127\.0\.0\.1 (.*)')
+	try:
+		feed = urllib.request.urlopen(url)
+		for line in feed:
+			#print (line.strip().decode('utf-8'))
+			if re.match(isComment,(line.strip().decode('utf-8'))):
+				pass
+			else:
+				#cleandomain = line.strip().decode('utf-8')
+				cleandomain = re.search(justurl, (line.strip().decode('utf-8')))
+				#### WHY IS NOT WORKING???
+				print(cleandomain.group())
+	except Exception as e: print ("Something went wrong fetching the Malware Domain list feed\n", e)
+	
+
+
+################ BUILD A MASTER FEEDS COMBINING ALL ######################################
+### STEP FOUR
+def master_feed (malcode,zeus,locky,bambenek,et,snort,malwaredomains,maldomainlist): ## ADD NEW FEEDS HERE AND IN THE FEED LIST DOWN BELOW
 	masterfeed = {}
 	masterfeed.clear()
+		
+	feeds = [malcode, zeus, locky, bambenek, et, snort, malwaredomains,maldomainlist]
+	print("\n")
+	print ("Digesting Feeds.... this takes a minute or two.... or three... go get yourslef some coffee!\n")
 	
-	feeds = [malcode, zeus, locky, bambenek, et]
-
 	for feed in feeds:
-		#print (feed)
-		#input()
 		for k, value in feed.items():
-			#print (k)
-			#input()
 			if k not in  masterfeed:
 				masterfeed.update({k:value})
 			else:
-				#print ('key = ', k)
-				#print ('value = ', value)
+				# If multiple Intel Sources reported the intel it will add both to intel field in the dictionary
+				
 				#print ('type in masterfeed = ', masterfeed[k][0]['Type'])
 				#print ('type in feed = ', feed[k][0]['Type'])
 				#types = masterfeed[k][0]['Type'] + feed[k][0]['Type']
 				intel = masterfeed[k]['IntelSource'] + feed[k]['IntelSource']
 				#masterfeed[k][0]['Type'] = types
 				masterfeed[k]['IntelSource'] = intel
-				#print (masterfeed[k])
-				#input()
-
 
 	return (masterfeed)
 
+###################### Improving digest speed #########################################
+#
+#def master_feed2 (malcode,zeus,locky,bambenek,et,snort,malwaredomains):
+#	masterfeed = {}
+#	feeds = [malcode, zeus, locky, bambenek, et, snort, malwaredomains]
+#	
+#	pbar = ProgressBar()
+#	
+#	def digest(kargvs):
+#		for feed in pbar(kargvs):
+#			for k, v in feed.items():
+#				pass
+#	
+#	
+#	digest(feeds)
+#
+#
 ###########################################################################################
 
 
 ############## MAIN FUNCTION FETCH ALL FEEDS AND RETURN A MASTER FEED DICTIONARY #########
+## STEP THREE
 def fetch_feeds():
 
 	print ("\nFetching Malc0de Blackist ..... ", end="")
@@ -138,8 +221,20 @@ def fetch_feeds():
 	print ("\nFetching Emerging Threats feed of Compromised IP addresses .... ", end="")
 	et = emerging_threats( emergingthreats_url )
 	print ("[DONE]")
+	
+	print ("\nFetching Talos Intelligence \"Snort\" black list of IP addresses .... ", end="")
+	snort = snortTalos( snorttalos_url )
+	print ("[DONE]")
+	
+	print ("\nFetching Immortal Malware Domains from Malwaredomains.com .....", end="")
+	malwaredomains = malwareDomains( malwaredomains_url )
+	print ("[DONE]")
+	
+	print ("\nFetching Malware Domains list from Malaredomainlist.com .....", end="")
+	maldomainlist = malDomainList( maldomainlist_url)
+	print ("[DONE]")
 
-	return (master_feed(malcode,zeus,locky,bambenek,et))
+	return (master_feed(malcode,zeus,locky,bambenek,et,snort,malwaredomains,maldomainlist))
 ##########################################################################################
 
 if __name__ == '__main__':
