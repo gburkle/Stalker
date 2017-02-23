@@ -14,12 +14,12 @@ isitaurl = re.compile(r'(hxxp|hxxps://)')
 ############################################################################################################################
 
 def readETP(etpfile):
-	file = etpfile
+	alerts_file = etpfile
 	etpalerts = {}
 	info = []
 	
 	try: 
-		with open(file, 'r') as f:
+		with open(alerts_file, 'r') as f:
 			reader = csv.reader(f)
 			
 			for line in reader:
