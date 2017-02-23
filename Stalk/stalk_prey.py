@@ -19,7 +19,7 @@ def spMenu():
 #                           #
 #############################
 
-[1] Stalk prey.
+[1] Basic Stalk.
 
 [2] Back to main menu. 
 """)
@@ -44,14 +44,16 @@ def stalkPrey():
     etpdb = dbconnect.feEtpColl()
     emailPattern = re.compile(r'[^@]+@[^@]+\.[^@]+')
     
+    
     try:
         print ("\n")
-        prey = input ("Input Prey: ")
         
+        prey = input ("Input Prey: ")
+        # Check if the input is an email address and focus the search on email addresses on FireEyeETP collection
         if re.match(emailPattern, prey):
             try:
                 if etpdb.find({'from':prey}).count() == 1:
-                    #print("Prey is an email address and it's on the database")
+                    # Print details if only 1 result
                     results = etpdb.find({'from':prey})
                     print ("IntelSource : FireEye ETP")
                     print ("FireETP Alert Number: ", results[0]['alert'])
@@ -64,20 +66,25 @@ def stalkPrey():
                     print ("Email Subject: ", results[0]['subject'])
                     print ("Notes or related IoCs: ", str(results[0]['evilips']))
                     
+                    # If more than one result (usually the case) gives the option to print all on raw format.
                 elif etpdb.find({'from':prey}).count() > 1:
                     print (etpdb.find({'from':prey}).count(), " preys were found!!\n")
+                   
                     choise = input ("Do you want to stalk them all? [Y/N]: ")
-                    if choise == 'Y' or 'y':
+                    if (choise == 'Y') or (choise == 'y'):
+                        print (choise)
                         results = etpdb.find({'from':prey})
                         for hit in results:
                             print(hit)
                             print("\n")
+                    else:
+                        pass
                     
                         
             except Exception as e: print (e)
         
         
-        
+        # IF the input is not an email, search threat intel collection for indicator
         elif opensourcedb.find({'indicator':prey}).count() > 0:
             
             results = opensourcedb.find({'indicator':prey})
@@ -103,9 +110,10 @@ def stalkPrey():
                 print ("IntelSource: ", results[0]['intelsource'])
                 print ("Type: ", results[0]['type'])
                 print ("Date added to StalkerDB: ", results[0]['date'])
+        
+        
         else:
-            print("\n")
-            print ("No prey was found\n")
+            print ("Stalking FAILED!! nothing found!!")
 
         print ("\n")
         input("Press Enter to Continue...")
