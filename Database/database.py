@@ -105,11 +105,11 @@ def dbUpdate_FireeyeETP():
     
     today = datetime.datetime.now().strftime("%m-%d-%Y")
     stats = 0
-    file = input("Enter the name of the file containing ETP alerts in CSV form. (Include absolute path if file is not in Stalker folder): ")
+    etp_file = input("Enter the name of the file containing ETP alerts in CSV form. (Include absolute path if file is not in Stalker folder): ")
     
-    if os.path.exists(file):
+    if os.path.exists(etp_file):
         
-        etpalerts = fireeye.readETP(file)
+        etpalerts = fireeye.readETP(etp_file)
         try:
             print("\n")
             print("Updating StalkerDB.etpalerts Collection....")        
@@ -156,7 +156,7 @@ def dbUpdate_FireeyeETP():
                         # Value already in database
                     else:
                         # URL path comes as evilips for URLS from fireeye_export_list.py, key is teh ETP alert number
-                        data = {'indicator':value['Name'], 'type':'Intel::DOMAIN', 'intelsource':'FireEye_ETP', 'date':today, 'notes':[key, value['evilips']]}
+                        data = {'indicator':value['Name'], 'type':'Intel::DOMAIN', 'intelsource':'FireEye_ETP', 'date':today, 'notes':[{'alert':key}, {'path':value['evilips']}]}
                         coll2.insert(data) #### Insert into the database
                         statsurls += 1
                         
@@ -167,7 +167,7 @@ def dbUpdate_FireeyeETP():
                         # Value already in database
                     else:
                         # Key is the ETP alert number, Name is the file name, evilips is the IP addresses associated with the binary
-                        data = {'indicator': value['MD5'], 'type': 'Intel::FILE_HASH', 'intelsource': 'FireEye_ETP', 'date':today, 'notes':[key, value['Name'], value['evilips']]}
+                        data = {'indicator': value['MD5'], 'type': 'Intel::FILE_HASH', 'intelsource': 'FireEye_ETP', 'date':today, 'notes':[{'alert':key}, {'filename':value['Name']}, {'evilips':value['evilips']}]}
                         coll2.insert(data) ### Insert into the database
                         statshash += 1
                         
