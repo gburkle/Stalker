@@ -39,16 +39,22 @@ def spMenu():
             options()
 
 def stalkPrey():
-    
     opensourcedb = dbconnect.opensourcelistsColl()
     #etpdb = dbconnect.feEtpColl()
-    
     try:
-        prey = input ("Prey: ")
-        results = opensourcedb.find({'indicator':prey})
-        for hit in results:
-            print(hit)
         print ("\n")
+        prey = input ("Input Prey: ")
+        if opensourcedb.find({'indicator':prey}).count() > 0:
+            results = opensourcedb.find({'indicator':prey})
+            for hit in results:
+                print(hit)
+        else:
+            print("\n")
+            print ("No prey was found\n")
+
+        print ("\n")
+        input("Press Enter to Continue...")
+        cls()
     except Exception as e: print ("Something is not right with that prey!", e)
     
 
