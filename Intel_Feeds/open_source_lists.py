@@ -9,7 +9,7 @@ import datetime
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 ###### ADD A NEW FEED ####################
-# 1 - Add url to global variables
+# 1 - Add url and feed to global variables
 # 2 - Create feed collection function
 # 3 - Add a feed fetch
 # 4 - Add feed to master feed processing
@@ -131,34 +131,39 @@ def malwareDomains( url ):
 	except Exception as e: print ("Something went wrong fetching the Immortal list of Malware URLs feed\n", e)
 	return (maldomains)
 
-#################### Malware Domain List ################################################
+#################### Malware Domain List DISABLED ################################################
 #
-def malDomainList( url ):
+#def malDomainList( url ):
 #	pass
-	maldomaindic = {}
-	justurl = re.compile('127\.0\.0\.1 (.*)')
-	try:
-		feed = urllib.request.urlopen(url)
-		for line in feed:
-			#print (line.strip().decode('utf-8'))
-			if re.match(isComment,(line.strip().decode('utf-8'))):
-				pass
-			else:
-				#cleandomain = line.strip().decode('utf-8')
-				cleandomain = re.search(justurl, (line.strip().decode('utf-8')))
-				#### WHY IS NOT WORKING???
-				print(cleandomain.group())
-	except Exception as e: print ("Something went wrong fetching the Malware Domain list feed\n", e)
-	
+#	maldomaindic = {}
+#	justurl = re.compile('127\.0\.0\.1 (.*)')
+#	try:
+#		feed = urllib.request.urlopen(url)
+#		for line in feed:
+#			#print (line.strip().decode('utf-8'))
+#			if re.match(isComment,(line.strip().decode('utf-8'))):
+#				pass
+#			else:
+#				#cleandomain = line.strip().decode('utf-8')
+#				cleandomain = re.search(justurl, (line.strip().decode('utf-8')))
+#				#### WHY IS NOT WORKING???
+#				print(cleandomain.group())
+#	except Exception as e: print ("Something went wrong fetching the Malware Domain list feed\n", e)
+#	
+#
+#
 
 
-################ BUILD A MASTER FEEDS COMBINING ALL ######################################
+
+
+
+################ FORGE A MASTER FEEDS AND INTO THE DARKNESS, BIND THEM ######################################
 ### STEP FOUR
-def master_feed (malcode,zeus,locky,bambenek,et,snort,malwaredomains,maldomainlist): ## ADD NEW FEEDS HERE AND IN THE FEED LIST DOWN BELOW
+def master_feed (malcode,zeus,locky,bambenek,et,snort,malwaredomains): ## ADD NEW FEEDS HERE AND IN THE FEED LIST DOWN BELOW
 	masterfeed = {}
 	masterfeed.clear()
 		
-	feeds = [malcode, zeus, locky, bambenek, et, snort, malwaredomains,maldomainlist]
+	feeds = [malcode, zeus, locky, bambenek, et, snort, malwaredomains] ## ADD NEW FEED HERE
 	print("\n")
 	print ("Digesting Feeds.... this takes a minute or two.... or three... go get yourslef some coffee!\n")
 	
@@ -178,7 +183,8 @@ def master_feed (malcode,zeus,locky,bambenek,et,snort,malwaredomains,maldomainli
 
 	return (masterfeed)
 
-###################### Improving digest speed #########################################
+###################### Improving digest speed - WORL IN PROGRES ###################################
+#
 #
 #def master_feed2 (malcode,zeus,locky,bambenek,et,snort,malwaredomains):
 #	masterfeed = {}
@@ -231,10 +237,11 @@ def fetch_feeds():
 	print ("[DONE]")
 	
 	print ("\nFetching Malware Domains list from Malaredomainlist.com .....", end="")
-	maldomainlist = malDomainList( maldomainlist_url)
-	print ("[DONE]")
-
-	return (master_feed(malcode,zeus,locky,bambenek,et,snort,malwaredomains,maldomainlist))
+	#maldomainlist = malDomainList( maldomainlist_url)
+	print ("[DISABLED]")
+	
+## SETP ONE - ADD NEW FEEDS HERE
+	return (master_feed(malcode,zeus,locky,bambenek,et,snort,malwaredomains))
 ##########################################################################################
 
 if __name__ == '__main__':
