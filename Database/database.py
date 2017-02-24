@@ -7,6 +7,7 @@ import os
 import datetime
 from  Intel_Feeds import open_source_lists as feeds
 from Intel_Feeds import fireeye_export_list as fireeye
+from Intel_Feeds import plain_list as plainl
 from Database import connections as dbconnect
 from Database import statistics as stats
 
@@ -21,9 +22,10 @@ def dbMenu():
 
 [1] Update Open Source Feeds.
 [2] Update FireEye ETP.
-[3] Statistics.
+[3] Import plain list of IoCs.
+[4] Statistics.
 
-[4] Back to main menu. 
+[5] Back to main menu. 
 """)
     options()
     while True:
@@ -39,9 +41,12 @@ def dbMenu():
             dbUpdate_FireeyeETP()
             options()
         elif option == 3:
-            stats.dbStatistics()
+            dbUpdate_plainList()
             options()
         elif option == 4:
+            stats.dbStatistics()
+            options()
+        elif option == 5:
             break
         else:
             print ("That doesn't seem to be an option. \n")
@@ -139,7 +144,7 @@ def dbUpdate_FireeyeETP():
 ## Key = ETP Alert number
 ## Value = { Time, From, Recipients, Subject, Type, Name "name of the binary file, or full URL", MD5, evilips[] }
 
-## Now using coll2 to connect to opensourcelists collection on StalkerDB
+## Now using opensourcelists collection on StalkerDB
 
             
         try:
@@ -191,7 +196,45 @@ def dbUpdate_FireeyeETP():
     else: # End of "if os.path.exists"
         print ("File not found. Make sure the file is on the Stalker folder, or use absolute path.\n")
      
+def dbUpdate_plainList():
+    plainlist = plainl.plainMenu() 
+    #print(plainlist)   
     
+    stats = 0
+    coll =  dbconnect.opensourcelistsColl() 
+    
+    print ("Inserting into the database information from the Plain file list ...\n")
+    try:
+        
+        for key, value in plainlist.items():
+            print ('indicator = ', key)
+            print ('Intel = ', value)
+            if coll.find({'indicator':key}).count() > 0:
+                print ("Indicator already in database\n")
+                #collid = coll.find({'indicator':key})[0]['_id']
+                intelsource = coll.find({'indicatior':key})[0]['intelsource']
+                newintelsource = [value['intelsource'],intelsource]
+                print (newintelsource[0])
+                print (newintelsource[1])
+                #print (collid) ## ID OF COLLECTION RECORD
+                #print(value['intelsource']) ## NEW INTEL SOURCE
+                
+            else:
+                try:
+                    #data = {'indicator': key, 'type': value['Type'], 'intelsource': value['IntelSource'], 'date': value['Date'], 'notes':['']}
+                    #coll.insert(data)
+                    stats += 1
+                except Exception as e: print(key, " could not be inserted into the database!!", e)
+            
+                     
+    except Exception as e: print("Could not update database with the information for the Plain file list", e)
+    
+    if stats == 0:
+        print ("\n")
+        print ("No information was inserted into the Intel Feeds database. ¯\_(ツ)_/¯ \n")
+    else:
+        print ("\n")
+        print (stats, "new records were inserted into the database from your Plain file list.\n")
 
 # ================================================================================================================================================================
 if __name__ == '__main__':
