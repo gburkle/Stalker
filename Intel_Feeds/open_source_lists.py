@@ -40,7 +40,7 @@ def malcode_feed( url ):
 		for line in feed:
 			ip = re.match(ipPattern,(line.strip().decode('utf-8')))
 			if ip:
-				malcode[ip.group(0)] = {'Type' : ['Intel::ADDR'], 'IntelSource' : ['Malc0de'], 'Date' : today}
+				malcode[ip.group(0)] = {'type' : ['Intel::ADDR'], 'intelsource' : ['Malc0de'], 'date' : today}
 	except Exception as e: print ("Something went wrong fetching Malc0de Blacklist\n", e)
 	return (malcode)
 ####################################################################################
@@ -53,7 +53,7 @@ def zeus_feed( url ):
 		for line in feed:
 			ip = re.match(ipPattern,(line.strip().decode('utf-8')))
 			if ip:
-				zeus[ip.group(0)] = { 'Type' : 'Intel::ADDR', 'IntelSource' : ['ZeuS Tracker'], 'Date' : today}
+				zeus[ip.group(0)] = { 'type' : 'Intel::ADDR', 'intelsource' : ['ZeuSTracker'], 'date' : today}
 	except Exception as e: print ("Something went wrong fetching ZeuS tracker list\n", e)
 	return (zeus)
 #####################################################################################
@@ -66,7 +66,7 @@ def locky_feed( url ):
 		for line in feed:
 			ip = re.match(ipPattern,(line.strip().decode('utf-8')))
 			if ip:
-				locky[ip.group(0)] = { 'Type' : 'Intel::ADDR', 'IntelSource' : ['Ransomware Tracker'], 'Date' : today}
+				locky[ip.group(0)] = { 'type' : 'Intel::ADDR', 'intelsource' : ['RansomwareTracker'], 'date' : today}
 	except Exception as e: print ("Something went wrong fetching Locky C2 list\n", e)
 	return (locky)
 #####################################################################################
@@ -79,7 +79,7 @@ def bambenek_feed ( url ):
 		for line in feed:
 			ip = re.match(ipPattern,(line.strip().decode('utf-8')))
 			if ip:
-				bambenek[ip.group(0)] = { 'Type' : 'Intel::ADDR', 'IntelSource' : ['Bambenek'], 'Date' : today}
+				bambenek[ip.group(0)] = { 'type' : 'Intel::ADDR', 'intelsource' : ['Bambenek'], 'date' : today}
 	except Exception as e: print ("Something went wrong fetching Bambenek list\n", e)
 	return (bambenek)
 ########################################################################################
@@ -92,7 +92,7 @@ def emerging_threats( url ):
 		for line in feed:
 			ip = re.match(ipPattern,(line.strip().decode('utf-8')))
 			if ip:
-				et[ip.group(0)] = {'Type' : 'Intel::ADDR', 'IntelSource' : ['Emerging_Threats'], 'Date' : today}
+				et[ip.group(0)] = {'type' : 'Intel::ADDR', 'intelsource' : ['Emerging_Threats'], 'date' : today}
 	except Exception as e: print ("Something went wrong fetching Emerging Threats list\n", e)
 	return (et)
 
@@ -106,7 +106,7 @@ def snortTalos( url ):
 		for line in feed:
 			ip = re.match(ipPattern,(line.strip().decode('utf-8')))
 			if ip:
-				snort[ip.group(0)] = {'Type' : 'Intel::ADDR', 'IntelSource' : ['Snort_Talos'], 'Date' : today}
+				snort[ip.group(0)] = {'type' : 'Intel::ADDR', 'intelsource' : ['Snort_Talos'], 'date' : today}
 	except Exception as e: print ("Something went wrong fetching Talos Intelligence Snort feed\n", e)
 	return (snort)
 
@@ -125,7 +125,7 @@ def malwareDomains( url ):
 				cleandomain = line.strip().decode('utf-8')
 				#cleandomain = re.match(justurl, domain).group(1)
 				#print (cleandomain)
-				maldomains[cleandomain] = {'Type' : 'Intel::DOMAIN', 'IntelSource' : ['MalwareDomains'], 'Date' : today}
+				maldomains[cleandomain] = {'type' : 'Intel::DOMAIN', 'intelsource' : ['MalwareDomains'], 'date' : today}
 				#print(domain)
 				
 	except Exception as e: print ("Something went wrong fetching the Immortal list of Malware URLs feed\n", e)
@@ -152,57 +152,6 @@ def malwareDomains( url ):
 #	
 #
 #
-
-
-
-
-
-################ FORGE A MASTER FEEDS AND INTO THE DARKNESS, BIND THEM ######################################
-### STEP FOUR
-def master_feed (malcode,zeus,locky,bambenek,et,snort,malwaredomains): ## ADD NEW FEEDS HERE AND IN THE FEED LIST DOWN BELOW
-	masterfeed = {}
-	masterfeed.clear()
-		
-	feeds = [malcode, zeus, locky, bambenek, et, snort, malwaredomains] ## ADD NEW FEED HERE
-	print("\n")
-	print ("Digesting Feeds.... this takes a minute or two.... or three... go get yourslef some coffee!\n")
-	
-	for feed in feeds:
-		for k, value in feed.items():
-			if k not in  masterfeed:
-				masterfeed.update({k:value})
-			else:
-				# If multiple Intel Sources reported the intel it will add both to intel field in the dictionary
-				
-				#print ('type in masterfeed = ', masterfeed[k][0]['Type'])
-				#print ('type in feed = ', feed[k][0]['Type'])
-				#types = masterfeed[k][0]['Type'] + feed[k][0]['Type']
-				intel = masterfeed[k]['IntelSource'] + feed[k]['IntelSource']
-				#masterfeed[k][0]['Type'] = types
-				masterfeed[k]['IntelSource'] = intel
-
-	return (masterfeed)
-
-###################### Improving digest speed - WORL IN PROGRES ###################################
-#
-#
-#def master_feed2 (malcode,zeus,locky,bambenek,et,snort,malwaredomains):
-#	masterfeed = {}
-#	feeds = [malcode, zeus, locky, bambenek, et, snort, malwaredomains]
-#	
-#	pbar = ProgressBar()
-#	
-#	def digest(kargvs):
-#		for feed in pbar(kargvs):
-#			for k, v in feed.items():
-#				pass
-#	
-#	
-#	digest(feeds)
-#
-#
-###########################################################################################
-
 
 ############## MAIN FUNCTION FETCH ALL FEEDS AND RETURN A MASTER FEED DICTIONARY #########
 ## STEP THREE
@@ -240,8 +189,57 @@ def fetch_feeds():
 	#maldomainlist = malDomainList( maldomainlist_url)
 	print ("[DISABLED]")
 	
-## SETP ONE - ADD NEW FEEDS HERE
+	## SETP ONE - ADD NEW FEEDS HERE
 	return (master_feed(malcode,zeus,locky,bambenek,et,snort,malwaredomains))
+
+
+
+################ FORGE A MASTER FEEDS AND INTO THE DARKNESS, BIND THEM ######################################
+### STEP FOUR
+def master_feed (malcode,zeus,locky,bambenek,et,snort,malwaredomains): ## ADD NEW FEEDS HERE AND IN THE FEED LIST DOWN BELOW
+	masterfeed = {}
+	masterfeed.clear()
+		
+	feeds = [malcode, zeus, locky, bambenek, et, snort, malwaredomains] ## ADD NEW FEED HERE
+	print("\n")
+	print ("Digesting Feeds.... this takes a minute or two.... or three... go get yourslef some coffee!\n")
+	
+	for feed in feeds:
+		for k, value in feed.items():
+			if k not in  masterfeed:
+				masterfeed.update({k:value})
+			else:
+				# If multiple Intel Sources reported the intel it will add both to intel field in the dictionary
+				
+				#print ('type in masterfeed = ', masterfeed[k][0]['Type'])
+				#print ('type in feed = ', feed[k][0]['Type'])
+				#types = masterfeed[k][0]['Type'] + feed[k][0]['Type']
+				intel = masterfeed[k]['intelsource'] + feed[k]['intelsource']
+				#masterfeed[k][0]['Type'] = types
+				masterfeed[k]['intelsource'] = intel
+
+	return (masterfeed)
+
+###################### Improving digest speed - WORK IN PROGRES ###################################
+#
+#
+#def master_feed2 (malcode,zeus,locky,bambenek,et,snort,malwaredomains):
+#	masterfeed = {}
+#	feeds = [malcode, zeus, locky, bambenek, et, snort, malwaredomains]
+#	
+#	pbar = ProgressBar()
+#	
+#	def digest(kargvs):
+#		for feed in pbar(kargvs):
+#			for k, v in feed.items():
+#				pass
+#	
+#	
+#	digest(feeds)
+#
+#
+###########################################################################################
+
 ##########################################################################################
 
 if __name__ == '__main__':
