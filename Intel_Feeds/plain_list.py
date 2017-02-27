@@ -48,53 +48,60 @@ def plainIngest():
     plainfile = input("Enter the name of the file: ")
     intelsource = input("Intel source (Ex. ongisac, mandiant): ")
     plainfilefeed = {}
+    ff = open('types_unknown.txt', 'w')
     
     ips = 0
     hashes = 0
     emails = 0
     domains = 0
-    
-#    coll = dbconnect.opensourcelistsColl()
+
     
     if os.path.exists(plainfile):
         try: 
             with open(plainfile, 'r') as f: 
                 rawintelfeed = f.read().splitlines()
+                
+            for line in rawintelfeed:
+                if not line:
+                    # Ignore blank lines
+                    continue
+                elif re.match(isitanip, line):
+                    #print ("This is an IP", line)
+                    plainfilefeed[line] = {'type': 'Intel::ADDR', 'intelsource': intelsource, 'date': today, 'notes':['']}
+                    ips += 1
+                elif re.match(isitahash, line):
+                    #print ("This is a HASH", line)
+                    plainfilefeed[line] = {'type': 'Intel::FILE_HASH', 'intelsource': intelsource, 'date': today, 'notes':['']}
+                    hashes += 1
+                elif re.match(isitanemail, line):
+                    #print ("This is an email", line)
+                    plainfilefeed[line] = {'type': 'Intel::EMAIL', 'intelsource': intelsource, 'date': today, 'notes':['']}
+                    emails += 1
+                elif re.match(isitadomain, line):
+                    #print ("This is a domain name!", line)
+                    plainfilefeed[line] = {'type': 'Intel::DOMAIN', 'intelsource': intelsource, 'date': today, 'notes':['']}
+                    domains += 1
+                else:
+                    print ("I don't know what this is -> [%s]\nIt shall be ignored!\n- Press Enter to continue - \n" % line)
+                    tu = line + "\n"
+                    ff.write(tu)
+                    #input()
+    
+            print ("[%s] Ip addreses will be imported." % ips)
+            print ("[%s] MD5 hashes will be imported." % hashes)
+            print ("[%s] Email addresses will be imported." % emails)
+            print ("[%s] Domain Names will be imported." % domains)
+            print("\n")
+            input ("Press Enter to continue....")
+                
+                
         except Exception as e: print ("Something wrong happened while trying to open the file.", e)                
     else: # End of "if os.path.exists"
         print ("File not found. Make sure the file is on the Stalker folder, or use absolute path.\n")
         
-    for line in rawintelfeed:
-        if not line:
-            # Ignore blank lines
-            continue
-        elif re.match(isitanip, line):
-            #print ("This is an IP", line)
-            plainfilefeed[line] = {'type': 'Intel::ADDR', 'intelsource': intelsource, 'date': today, 'notes':['']}
-            ips += 1
-        elif re.match(isitahash, line):
-            #print ("This is a HASH", line)
-            plainfilefeed[line] = {'type': 'Intel::FILE_HASH', 'intelsource': intelsource, 'date': today, 'notes':['']}
-            hashes += 1
-        elif re.match(isitanemail, line):
-            #print ("This is an email", line)
-            plainfilefeed[line] = {'type': 'Intel::EMAIL', 'intelsource': intelsource, 'date': today, 'notes':['']}
-            emails += 1
-        elif re.match(isitadomain, line):
-            #print ("This is a domain name!", line)
-            plainfilefeed[line] = {'type': 'Intel::DOMAIN', 'intelsource': intelsource, 'date': today, 'notes':['']}
-            domains += 1
-        else:
-            print ("I don't know what this is -> [%s]\nIt shall be ignored!\n- Press Enter to continue - \n" % line)
-            input()
     
-    print ("[%s] Ip addreses will be imported." % ips)
-    print ("[%s] MD5 hashes will be imported." % hashes)
-    print ("[%s] Email addresses will be imported." % emails)
-    print ("[%s] Domain Names will be imported." % domains)
-    print("\n")
-    input ("Press Enter to continue....")
     
+    ff.close()
     return (plainfilefeed)
 
 def cls(): 
