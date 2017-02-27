@@ -10,7 +10,7 @@ from Intel_Feeds import fireeye_export_list as fireeye
 from Intel_Feeds import plain_list as plainl
 from Database import connections as dbconnect
 from Database import statistics as stats
-
+from Modules import misc
 def dbMenu():
     
     def options():
@@ -63,7 +63,7 @@ def dbUpdate_opensourcelists():
     
     
     
-    print ("Downloading and inserting into the database information from open source lists (Malc0de, Zeus Tracker, Locky, Bambenek and Emerging Threats) ...\n")
+    print ("Downloading and inserting into the database information from open source lists...\n")
     try:
         
         for key, value in feeds.fetch_feeds().items():
@@ -71,10 +71,19 @@ def dbUpdate_opensourcelists():
             #print ('Intel = ', value)
             if coll.find({'indicator':key}).count() > 0:
                 #print ("Indicator already in database\n")
-                pass
+                #print ("Indicator [%s] already in database\n" % key )
+                #print ("Adding new Intel Source to record... \n") 
+                ## GYMNASTICS TO AVOID INSERTING SAME VALUE MULTIPLE TIMES INTO INTEL SOURCE.
+                try:
+                    first_list = coll.find({'indicator':key})[0]['intelsource']
+                    newintelsource = value['intelsource']
+                    resultintel = misc.updateIntelsource(first_list, newintelsource) 
+                    # Now insert updated intel source into the database record. 
+                    coll.update({'indicator':key},{"$set":{'intelsource':resultintel}})
+                except Exception as e: print("Something went wrong while updating intelsources...", e)
             else:
                 try:
-                    data = {'indicator': key, 'type': value['Type'], 'intelsource': value['IntelSource'], 'date': value['Date'], 'notes':['']}
+                    data = {'indicator': key, 'type': value['type'], 'intelsource': value['intelsource'], 'date': value['date'], 'notes':['']}
                     coll.insert(data)
                     stats += 1
                 except Exception as e: print(key, " could not be inserted into the database!!", e)
@@ -87,7 +96,7 @@ def dbUpdate_opensourcelists():
         print ("No information was inserted into the Intel Feeds database. ¯\_(ツ)_/¯ \n")
     else:
         print ("\n")
-        print (stats, "new records were inserted into the database from open source lists (Malc0de, Zeus Tracker, Locky, Bambenek and Emerging Threats).\n")
+        print (stats, "new records were inserted into the database from open source lists.\n")
         
     
 #=============================================================================================================================================================
@@ -157,22 +166,34 @@ def dbUpdate_FireeyeETP():
             for key, value in etpalerts.items():
                 if  value['Type'] == 'url':
                     if coll2.find({'indicator':value['Name']}).count() > 0:
-                        pass
                         # Value already in database
+                        try:
+                            first_list = coll2.find({'indicator':value['Name']})[0]['intelsource']
+                            newintelsource = ['FireEye_ETP']
+                            resultintel = misc.updateIntelsource(first_list, newintelsource) 
+                            # Now insert updated intel source into the database record. 
+                            coll2.update({'indicator':value['Name']},{"$set":{'intelsource':resultintel}})
+                        except Exception as e: print("Something went wrong while updating intelsources...", e)
                     else:
-                        # URL path comes as evilips for URLS from fireeye_export_list.py, key is teh ETP alert number
-                        data = {'indicator':value['Name'], 'type':'Intel::DOMAIN', 'intelsource':'FireEye_ETP', 'date':today, 'notes':[{'alert':key}, {'path':value['evilips']}]}
+                        # URL path comes as evilips for URLS from fireeye_export_list.py, key is the ETP alert number
+                        data = {'indicator':value['Name'], 'type':'Intel::DOMAIN', 'intelsource':['FireEye_ETP'], 'date':today, 'notes':[{'alert':key}, {'path':value['evilips']}]}
                         coll2.insert(data) #### Insert into the database
                         statsurls += 1
                         
                               
                 elif value['MD5'] !=  'N/A':
                     if coll2.find({'indicator': value['MD5']}).count() > 0:
-                        pass
                         # Value already in database
+                        try:
+                            first_list = coll2.find({'indicator':value['MD5']})[0]['intelsource']
+                            newintelsource = ['FireEye_ETP']
+                            resultintel = misc.updateIntelsource(first_list, newintelsource) 
+                            # Now insert updated intel source into the database record. 
+                            coll2.update({'indicator':value['MD5']},{"$set":{'intelsource':resultintel}})
+                        except Exception as e: print("Something went wrong while updating intelsources...", e)
                     else:
                         # Key is the ETP alert number, Name is the file name, evilips is the IP addresses associated with the binary
-                        data = {'indicator': value['MD5'], 'type': 'Intel::FILE_HASH', 'intelsource': 'FireEye_ETP', 'date':today, 'notes':[{'alert':key}, {'filename':value['Name']}, {'evilips':value['evilips']}]}
+                        data = {'indicator': value['MD5'], 'type': 'Intel::FILE_HASH', 'intelsource': ['FireEye_ETP'], 'date':today, 'notes':[{'alert':key}, {'filename':value['Name']}, {'evilips':value['evilips']}]}
                         coll2.insert(data) ### Insert into the database
                         statshash += 1
                         
@@ -195,7 +216,9 @@ def dbUpdate_FireeyeETP():
              
     else: # End of "if os.path.exists"
         print ("File not found. Make sure the file is on the Stalker folder, or use absolute path.\n")
-     
+ 
+ 
+####### INSERT INTO THE DATABASE INFORMATION FROM PLAIN LIST FILE (plain_list.py)    
 def dbUpdate_plainList():
     plainlist = plainl.plainMenu() 
     #print(plainlist)   
@@ -207,22 +230,28 @@ def dbUpdate_plainList():
     try:
         
         for key, value in plainlist.items():
-            print ('indicator = ', key)
-            print ('Intel = ', value)
+            #print ('indicator = ', key)
+            #print ('Intel = ', value)
             if coll.find({'indicator':key}).count() > 0:
-                print ("Indicator already in database\n")
-                #collid = coll.find({'indicator':key})[0]['_id']
-                intelsource = coll.find({'indicatior':key})[0]['intelsource']
-                newintelsource = [value['intelsource'],intelsource]
-                print (newintelsource[0])
-                print (newintelsource[1])
-                #print (collid) ## ID OF COLLECTION RECORD
-                #print(value['intelsource']) ## NEW INTEL SOURCE
-                
+                print ("Indicator [%s] already in database\n" % key )
+                print ("Updating Intel Source with new information... \n") 
+                ## GYMNASTICS TO AVOID INSERTING SAME VALUE MULTIPLE TIMES INTO INTEL SOURCE.
+                try:
+                    first_list = coll.find({'indicator':key})[0]['intelsource']
+                    newintelsource = [value['intelsource']]
+                    #in_first = set(first_list)
+                    #in_second = set(newintelsource)
+                    #updateintel = in_second - in_first
+                    #resultintel = first_list + list(updateintel) # Resultsintel is the combination of new intelsource and data already in database.
+                    resultintel = misc.updateIntelsource(first_list, newintelsource)
+                 
+                    # Now insert updated intel source into the database record. 
+                    coll.update({'indicator':key},{"$set":{'intelsource':resultintel}})
+                except Exception as e: print("Something went wrong updating intel sources...", e)
             else:
                 try:
-                    #data = {'indicator': key, 'type': value['Type'], 'intelsource': value['IntelSource'], 'date': value['Date'], 'notes':['']}
-                    #coll.insert(data)
+                    data = {'indicator': key, 'type': value['type'], 'intelsource': [value['intelsource']], 'date': value['date'], 'notes':['']}
+                    coll.insert(data)
                     stats += 1
                 except Exception as e: print(key, " could not be inserted into the database!!", e)
             
