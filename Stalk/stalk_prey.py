@@ -20,8 +20,9 @@ def spMenu():
 #############################
 
 [1] Basic Stalk.
+[2] Multiple Prey.
 
-[2] Back to main menu. 
+[3] Back to main menu. 
 """)
     options()
     while True:
@@ -34,10 +35,66 @@ def spMenu():
             stalkPrey()
             options()
         elif option == 2:
+            multiplePrey()
+            options()
+        elif option == 3:
             break
         else:
             print ("That doesn't seem to be an option. \n")
             options()
+
+def multiplePrey():
+    #pass
+    print ("Search multiple indicators listed on a text file.\n")
+    allprey = input("Enter the name of the file: ")
+    opensourcedb = dbconnect.opensourcelistsColl()
+    etpdb = dbconnect.feEtpColl()
+    
+    if os.path.exists(allprey):
+        try: 
+            with open(allprey, 'r') as f: 
+                alltheprey = f.read().splitlines()
+                
+            for line in alltheprey:
+                if not line:
+                    # Ignore blank lines
+                    continue
+                elif opensourcedb.find({'indicator':line}).count() > 0:
+                    #print("Prey FOUND!!")
+                    #print (opensourcedb.find({'indicator':line})[0])
+                    print("\n")
+                    print ("Prey found, stalking... [%s]\n" % line)
+                    results = opensourcedb.find({'indicator':line})
+                    
+                    if results[0]['intelsource'] == 'FireEye_ETP':
+                        etpalertnumber = results[0]['notes'][0]['alert']
+                        results = etpdb.find({'alert':etpalertnumber})
+                        print ("IntelSource : FireEye ETP")
+                        print ("FireETP Alert Number: ", results[0]['alert'])
+                        print ("Alert date: ", results[0]['time'])
+                        print ("Alert type: ", results[0]['type'])
+                        print ("File name or URL: ", results[0]['name'])
+                        print ("File Hash:", results[0]['md5'])
+                        print ("Sent from: ", results[0]['from'])
+                        print ("Sent to: ", results[0]['recipients'])
+                        print ("Email Subject: ", results[0]['subject'])
+                        print ("Notes or related IoCs: ", str(results[0]['evilips']))
+                    else:
+                        #for hit in results:
+                        #    print(hit)
+                        print ("IntelSource: ", results[0]['intelsource'])
+                        print ("Type: ", results[0]['type'])
+                        print ("Date added to StalkerDB: ", results[0]['date'])
+                else:
+                    #print (" %s Not found in Threat Intel" % line)
+                    continue  
+        except Exception as e: print ("Something wrong happened while trying to open the file.", e)                
+    else: # End of "if os.path.exists"
+        print ("File not found. Make sure the file is on the Stalker folder, or use absolute path.\n")
+    
+    print("\n")    
+    input ("Press enter to continue ...")
+        
 
 def stalkPrey():
     opensourcedb = dbconnect.opensourcelistsColl()
