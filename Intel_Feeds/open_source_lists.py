@@ -199,25 +199,66 @@ def fetch_feeds():
 def master_feed (malcode,zeus,locky,bambenek,et,snort,malwaredomains): ## ADD NEW FEEDS HERE AND IN THE FEED LIST DOWN BELOW
 	masterfeed = {}
 	masterfeed.clear()
+	cachefile = '.cache/osintel'
+	
 		
 	feeds = [malcode, zeus, locky, bambenek, et, snort, malwaredomains] ## ADD NEW FEED HERE
 	print("\n")
-	print ("Digesting Feeds.... this takes a minute or two.... or three... go get yourslef some coffee!\n")
+	print ("Digesting Feeds....This might take some time if it's the first update or if you haven't updated in a while!\n")
 	
-	for feed in feeds:
-		for k, value in feed.items():
-			if k not in  masterfeed:
-				masterfeed.update({k:value})
-			else:
-				# If multiple Intel Sources reported the intel it will add both to intel field in the dictionary
+	
+	### CHECK FOR CACHE FILE TO IMPROVE DIGEST SPEED
+	if os.path.exists(cachefile):
+		#print ("cache file found!\n")
+		
+		cachelist = {}
+		with open(cachefile) as f:
+			for line in f:
+				cachelist[line.strip()] = 'cache'
 				
-				#print ('type in masterfeed = ', masterfeed[k][0]['Type'])
-				#print ('type in feed = ', feed[k][0]['Type'])
-				#types = masterfeed[k][0]['Type'] + feed[k][0]['Type']
-				intel = masterfeed[k]['intelsource'] + feed[k]['intelsource']
-				#masterfeed[k][0]['Type'] = types
-				masterfeed[k]['intelsource'] = intel
+		#for k, value in cachelist.items():
+		#	print (k)
+		#	print (value)
+			
+			
+		cf2 = []
+		for feed in feeds:
+			for k, value in feed.items():
+				cf2.append(str(k))
+				if k not in cachelist:
+					if k not in  masterfeed:
+						masterfeed.update({k:value})
+					else:
+						intel = masterfeed[k]['intelsource'] + feed[k]['intelsource']
+						masterfeed[k]['intelsource'] = intel	
+				else:
+					#print (k, "in cache list\n")
+					continue
+				
+		# CREATE NEW CACHE FILE			
+		cf = open(cachefile, 'w')
+		for item in cf2:
+			cf.write("%s\n" % item)				
+		cf.close()		
+	## IF NO CACHE FILE CREATE ONE 
+	else:
+		#print ("no cache file found!\n")
+		os.makedirs('.cache/')
+		cf = open(cachefile, 'w')	
+		for feed in feeds:
+			for k, value in feed.items():
+				newline = ('%s\n' % str(k))	
+				cf.write(newline)
+				#cf.write('\n')
+				if k not in  masterfeed:
+					masterfeed.update({k:value})
+				else:
+					intel = masterfeed[k]['intelsource'] + feed[k]['intelsource']
+					masterfeed[k]['intelsource'] = intel
 
+		cf.close()
+	
+	## RETURN MASTER FEED 
 	return (masterfeed)
 
 ###################### Improving digest speed - WORK IN PROGRES ###################################
