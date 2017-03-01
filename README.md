@@ -20,6 +20,8 @@ Talos Intelligence (Snort) - http://www.talosintelligence.com/feeds/ip-filter.bl
 
 Malwaredomains - http://mirror1.malwaredomains.com/files/immortal_domains.txt 
 
+OpenPhish - https://openphish.com/feed.txt
+
 Malware Domains List (DISABLED)  - http://www.malwaredomainlist.com/hostslist/hosts.txt
  
 All the information will be inserted into a local MongoDB database.
