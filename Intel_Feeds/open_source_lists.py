@@ -1,8 +1,9 @@
 import sys, os
 import urllib.request
-#import urllib.parse
+import urllib.parse
 import re
 import datetime
+#from smtplib import line
 #from progressbar import ProgressBar
 #import json
 
@@ -26,6 +27,7 @@ emergingthreats_url = 'https://rules.emergingthreats.net/blockrules/compromised-
 snorttalos_url = 'http://www.talosintelligence.com/feeds/ip-filter.blf'
 malwaredomains_url = 'http://mirror1.malwaredomains.com/files/immortal_domains.txt'
 maldomainlist_url = 'http://www.malwaredomainlist.com/hostslist/hosts.txt'
+openphish_url = 'https://openphish.com/feed.txt'
 
 today = datetime.datetime.now().strftime("%m-%d-%Y")
 
@@ -115,21 +117,32 @@ def snortTalos( url ):
 ################ Immortal Malware Domains ###################################################
 def malwareDomains( url ):
 	maldomains = {}
-	#justurl = re.compile(r"b\'(.*)\\n\'")
 	try:
 		feed = urllib.request.urlopen(url)
 		for line in feed:
 			if re.match(isComment,(line.strip().decode('utf-8'))):
-				pass
+				continue
 			else:
 				cleandomain = line.strip().decode('utf-8')
-				#cleandomain = re.match(justurl, domain).group(1)
-				#print (cleandomain)
 				maldomains[cleandomain] = {'type' : 'Intel::DOMAIN', 'intelsource' : ['MalwareDomains'], 'date' : today}
-				#print(domain)
+
 				
 	except Exception as e: print ("Something went wrong fetching the Immortal list of Malware URLs feed\n", e)
 	return (maldomains)
+
+################ OpenPhish list of phishing sites #################################################
+def openPhish( url ):
+	ophish = {}
+	try:
+		feed = urllib.request.urlopen(url)
+		for line in feed:
+			line = line.strip().decode('utf-8')
+			cleanurl = urllib.parse.urlparse(line, scheme='http|https')
+			#print (cleanurl[1])
+			ophish[cleanurl[1]] = {'type': 'Intel::DOMAIN', 'intelsource': ['OpenPhish'], 'date': today}
+			
+	except Exception as e: print ("Something went wrong fetch OpenPhish list of phishing sites\n", e)
+	return (ophish)
 
 #################### Malware Domain List DISABLED ################################################
 #
@@ -185,42 +198,40 @@ def fetch_feeds():
 	malwaredomains = malwareDomains( malwaredomains_url )
 	print ("[DONE]")
 	
+	print ("\nFetching phishing sites from OpenPhish.com ....", end="")
+	openphish = openPhish( openphish_url )
+	print ("[DONE]")
+	
 	print ("\nFetching Malware Domains list from Malaredomainlist.com .....", end="")
 	#maldomainlist = malDomainList( maldomainlist_url)
 	print ("[DISABLED]")
 	
 	## SETP ONE - ADD NEW FEEDS HERE
-	return (master_feed(malcode,zeus,locky,bambenek,et,snort,malwaredomains))
+	return (master_feed(malcode,zeus,locky,bambenek,et,snort,malwaredomains,openphish))
 
 
 
 ################ FORGE A MASTER FEEDS AND INTO THE DARKNESS, BIND THEM ######################################
 ### STEP FOUR
-def master_feed (malcode,zeus,locky,bambenek,et,snort,malwaredomains): ## ADD NEW FEEDS HERE AND IN THE FEED LIST DOWN BELOW
+def master_feed (malcode,zeus,locky,bambenek,et,snort,malwaredomains,openphish): ## ADD NEW FEEDS HERE AND IN THE FEED LIST DOWN BELOW
 	masterfeed = {}
 	masterfeed.clear()
 	cachefile = '.cache/osintel'
 	
 		
-	feeds = [malcode, zeus, locky, bambenek, et, snort, malwaredomains] ## ADD NEW FEED HERE
-	print("\n")
-	print ("Digesting Feeds....This might take some time if it's the first update or if you haven't updated in a while!\n")
+	feeds = [malcode, zeus, locky, bambenek, et, snort, malwaredomains,openphish] ## ADD NEW FEED HERE
+	print("\n______________________________________________________________________________________________________________________")
+	print ("\nDigesting Feeds....This might take some time if it's the first update, or if you haven't updated in a while!\n")
 	
 	
 	### CHECK FOR CACHE FILE TO IMPROVE DIGEST SPEED
 	if os.path.exists(cachefile):
 		#print ("cache file found!\n")
-		
 		cachelist = {}
 		with open(cachefile) as f:
 			for line in f:
 				cachelist[line.strip()] = 'cache'
 				
-		#for k, value in cachelist.items():
-		#	print (k)
-		#	print (value)
-			
-			
 		cf2 = []
 		for feed in feeds:
 			for k, value in feed.items():
@@ -249,7 +260,6 @@ def master_feed (malcode,zeus,locky,bambenek,et,snort,malwaredomains): ## ADD NE
 			for k, value in feed.items():
 				newline = ('%s\n' % str(k))	
 				cf.write(newline)
-				#cf.write('\n')
 				if k not in  masterfeed:
 					masterfeed.update({k:value})
 				else:
@@ -261,28 +271,8 @@ def master_feed (malcode,zeus,locky,bambenek,et,snort,malwaredomains): ## ADD NE
 	## RETURN MASTER FEED 
 	return (masterfeed)
 
-###################### Improving digest speed - WORK IN PROGRES ###################################
-#
-#
-#def master_feed2 (malcode,zeus,locky,bambenek,et,snort,malwaredomains):
-#	masterfeed = {}
-#	feeds = [malcode, zeus, locky, bambenek, et, snort, malwaredomains]
-#	
-#	pbar = ProgressBar()
-#	
-#	def digest(kargvs):
-#		for feed in pbar(kargvs):
-#			for k, v in feed.items():
-#				pass
-#	
-#	
-#	digest(feeds)
-#
-#
-###########################################################################################
-
 ##########################################################################################
-
+### RUN THIS SCRIPT BY ITELSF FOR TESTING
 if __name__ == '__main__':
 	fetch_feeds()
 	#print (master)
