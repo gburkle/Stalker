@@ -221,50 +221,52 @@ def dbUpdate_FireeyeETP():
 ####### INSERT INTO THE DATABASE INFORMATION FROM PLAIN LIST FILE (plain_list.py)    
 def dbUpdate_plainList():
     plainlist = plainl.plainMenu() 
-    #print(plainlist)   
     
-    stats = 0
-    coll =  dbconnect.opensourcelistsColl() 
-    
-    print ("Inserting into the database information from the Plain file list ...\n")
-    try:
+    if plainlist != False: # FIST IF
+        stats = 0
+        coll =  dbconnect.opensourcelistsColl() 
         
-        for key, value in plainlist.items():
-            #print ('indicator = ', key)
-            #print ('Intel = ', value)
-            if coll.find({'indicator':key}).count() > 0:
-                print ("Indicator [%s] already in database\n" % key )
-                print ("Updating Intel Source with new information... \n") 
-                ## GYMNASTICS TO AVOID INSERTING SAME VALUE MULTIPLE TIMES INTO INTEL SOURCE.
-                try:
-                    first_list = coll.find({'indicator':key})[0]['intelsource']
-                    newintelsource = [value['intelsource']]
-                    #in_first = set(first_list)
-                    #in_second = set(newintelsource)
-                    #updateintel = in_second - in_first
-                    #resultintel = first_list + list(updateintel) # Resultsintel is the combination of new intelsource and data already in database.
-                    resultintel = misc.updateIntelsource(first_list, newintelsource)
-                 
-                    # Now insert updated intel source into the database record. 
-                    coll.update({'indicator':key},{"$set":{'intelsource':resultintel}})
-                except Exception as e: print("Something went wrong updating intel sources...", e)
-            else:
-                try:
-                    data = {'indicator': key, 'type': value['type'], 'intelsource': [value['intelsource']], 'date': value['date'], 'notes':['']}
-                    coll.insert(data)
-                    stats += 1
-                except Exception as e: print(key, " could not be inserted into the database!!", e)
+        print ("Inserting into the database information from the Plain file list ...\n")
+        try:
             
+            for key, value in plainlist.items():
+                #print ('indicator = ', key)
+                #print ('Intel = ', value)
+                if coll.find({'indicator':key}).count() > 0:
+                    print ("Indicator [%s] already in database\n" % key )
+                    print ("Updating Intel Source with new information... \n") 
+                    ## GYMNASTICS TO AVOID INSERTING SAME VALUE MULTIPLE TIMES INTO INTEL SOURCE.
+                    try:
+                        first_list = coll.find({'indicator':key})[0]['intelsource']
+                        newintelsource = [value['intelsource']]
+                        #in_first = set(first_list)
+                        #in_second = set(newintelsource)
+                        #updateintel = in_second - in_first
+                        #resultintel = first_list + list(updateintel) # Resultsintel is the combination of new intelsource and data already in database.
+                        resultintel = misc.updateIntelsource(first_list, newintelsource)
                      
-    except Exception as e: print("Could not update database with the information for the Plain file list", e)
+                        # Now insert updated intel source into the database record. 
+                        coll.update({'indicator':key},{"$set":{'intelsource':resultintel}})
+                    except Exception as e: print("Something went wrong updating intel sources...", e)
+                else:
+                    try:
+                        data = {'indicator': key, 'type': value['type'], 'intelsource': [value['intelsource']], 'date': value['date'], 'notes':['']}
+                        coll.insert(data)
+                        stats += 1
+                    except Exception as e: print(key, " could not be inserted into the database!!", e)
+                
+                         
+        except Exception as e: print("Could not update database with the information for the Plain file list", e)
+        
+        if stats == 0:
+            print ("\n")
+            print ("No information was inserted into the Intel Feeds database. ¯\_(ツ)_/¯ \n")
+        else:
+            print ("\n")
+            print (stats, "new records were inserted into the database from your Plain file list.\n")
     
-    if stats == 0:
-        print ("\n")
-        print ("No information was inserted into the Intel Feeds database. ¯\_(ツ)_/¯ \n")
-    else:
-        print ("\n")
-        print (stats, "new records were inserted into the database from your Plain file list.\n")
-
+    else:  # ELSE OF FIRST IF
+        print ("Nothing to do here....\n")
 # ================================================================================================================================================================
 if __name__ == '__main__':
     dbMenu()
