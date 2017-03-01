@@ -5,6 +5,7 @@ Created on Feb 24, 2017
 '''
 #import urllib.parse
 import re, os, datetime
+from Modules import misc
 #from Database import connections as dbconnect
 #sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
@@ -17,7 +18,7 @@ isitanemail = re.compile(r'[^@]+@[^@]+\.[^@]+')
 today = datetime.datetime.now().strftime("%m-%d-%Y")
 
 def plainMenu():
-    cls()
+    misc.cls()
     
     
     print ("""
@@ -46,7 +47,7 @@ If the file is not in the Stalker folder, use absolute path.
 
 def plainIngest():
     plainfile = input("Enter the name of the file: ")
-    intelsource = input("Intel source (Ex. ongisac, mandiant): ")
+    intelsource = input("Intel source (Ex. ongisac, fsisac, mandiant): ")
     plainfilefeed = {}
     ff = open('types_unknown.txt', 'w')
     
@@ -94,23 +95,25 @@ def plainIngest():
             print("\n")
             input ("Press Enter to continue....")
                 
-                
+            ff.close()
+            return (plainfilefeed)  
+          
         except Exception as e: print ("Something wrong happened while trying to open the file.", e)                
     else: # End of "if os.path.exists"
         print ("File not found. Make sure the file is on the Stalker folder, or use absolute path.\n")
+        return (False)
         
     
     
-    ff.close()
-    return (plainfilefeed)
+    
 
-def cls(): 
+#def cls(): 
     #try:
     #    os.system('cls') # For windows
     #except Exception as e: return
-    try:
-        os.system('clear') # For Linux
-    except Exception: return
+#    try:
+#        os.system('clear') # For Linux
+#    except Exception: return
 
 if __name__ == '__main__':
     plainMenu()
