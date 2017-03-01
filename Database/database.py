@@ -158,7 +158,7 @@ def dbUpdate_FireeyeETP():
             
         try:
             print("\n")
-            print("Updating StalkerDB.opensourcelists with ETP information.....")
+            print("Updating StalkerDB Threat Intel with ETP information.....")
             statshash = 0
             statsurls = 0
             statsunknown = 0
@@ -208,7 +208,7 @@ def dbUpdate_FireeyeETP():
             print ("Nothing new found. No information was inserted into the database. ¯\_(ツ)_/¯ \n")
         elif statsunknown > 0:
             print ("\n")
-            print ("%d New URLs, and %d new Hashes were inserted into the Intel Feeds database from the FireEye ETP alerts file.\n" % (statsurls, statshash))
+            print ("%d New URLs, and %d new Hashes were inserted into the Threat Intel Feeds database from the FireEye ETP alerts file.\n" % (statsurls, statshash))
             print (statsunknown, " unknown records were ignored! ¬_¬ ")
         else:
             print ("\n")
