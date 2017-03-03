@@ -22,8 +22,10 @@ Malwaredomains - http://mirror1.malwaredomains.com/files/immortal_domains.txt
 
 OpenPhish - https://openphish.com/feed.txt
 
-Malware Domains List (DISABLED)  - http://www.malwaredomainlist.com/hostslist/hosts.txt
+Malware Domains List - http://www.malwaredomainlist.com/hostslist/hosts.txt
  
+Phish Tank - http://data.phishtank.com/data/online-valid.csv
+
 All the information will be inserted into a local MongoDB database.
 At the same time I'm also going to collect data from FireEye ETP (cos it's going to be useful for me) and dump it on the same database.
 Possibly I will collect critical Stack information as well to enrich the database with more info, and I'll create a function to add database intel into a Bro watchlist. 
