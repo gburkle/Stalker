@@ -54,7 +54,7 @@ def dbMenu():
             
 
 # ================================================================================================================================================
-# Update MongoDB Database "StalkerDB", Collection "opensourcelists" with information from Malc0de, Zeus Tracker, Locky and Bambenek
+# Update MongoDB Database "StalkerDB", Collection "opensourcelists" with information from open source threat intel feeds
 
 def dbUpdate_opensourcelists():
     
@@ -162,8 +162,22 @@ def dbUpdate_FireeyeETP():
             statshash = 0
             statsurls = 0
             statsunknown = 0
+            statsemail = 0
             
             for key, value in etpalerts.items():
+                ##### Insert sender email as an IoC in the database.
+                if coll2.find({'indicator':value['From']}).count() > 0:
+                    # Email already in database
+                    pass
+                else:
+                    #print ("Email not in database!", value['From'])  ## TESTING
+                    data = {'indicator':value['From'], 'type': 'Intel::EMAIL', 'intelsource':['FireEye_ETP'], 'date':today, 'notes':[{'alert':key}, {'subject':value['Subject']}]}
+                    coll2.insert(data)
+                    statsemail += 1
+                    #print ("\nEmail inserted")
+                    #input()                 ## TESTING
+                
+                #### CONTINUE UPDATING DATABASE WITH THE REST OF THE INFORMATION
                 if  value['Type'] == 'url':
                     if coll2.find({'indicator':value['Name']}).count() > 0:
                         # Value already in database
@@ -171,7 +185,7 @@ def dbUpdate_FireeyeETP():
                             first_list = coll2.find({'indicator':value['Name']})[0]['intelsource']
                             newintelsource = ['FireEye_ETP']
                             resultintel = misc.updateIntelsource(first_list, newintelsource) 
-                            # Now insert updated intel source into the database record. 
+                            # Now insert updated intel source on the database record. 
                             coll2.update({'indicator':value['Name']},{"$set":{'intelsource':resultintel}})
                         except Exception as e: print("Something went wrong while updating intelsources...", e)
                     else:
@@ -203,16 +217,16 @@ def dbUpdate_FireeyeETP():
         except Exception as e: 
             print ("Something went wrong while updating StalkerDb.opensourcelists collection with ETP information.", e)  
         
-        if stats == 0:
+        if (stats == 0) and (statsemail == 0):
             print ("\n")
             print ("Nothing new found. No information was inserted into the database. ¯\_(ツ)_/¯ \n")
-        elif statsunknown > 0:
-            print ("\n")
-            print ("%d New URLs, and %d new Hashes were inserted into the Threat Intel Feeds database from the FireEye ETP alerts file.\n" % (statsurls, statshash))
-            print (statsunknown, " unknown records were ignored! ¬_¬ ")
+        #elif statsunknown > 0:
+        #    print ("\n")
+        #    print ("%d New URLs, and %d new Hashes were inserted into the Threat Intel Feeds database from the FireEye ETP alerts file.\n" % (statsurls, statshash))
+        #    print (statsunknown, " unknown records were ignored! ¬_¬ ")
         else:
             print ("\n")
-            print ("%d New URLs, and %d new Hashes were inserted into the Intel Feeds database from the FireEye ETP alerts file.\n" % (statsurls, statshash))    
+            print ("%d New URLs, %d new Emails, and %d new Hashes were inserted into the Intel Feeds database from the FireEye ETP alerts file.\n" % (statsurls, statsemail, statshash))    
              
     else: # End of "if os.path.exists"
         print ("File not found. Make sure the file is on the Stalker folder, or use absolute path.\n")
