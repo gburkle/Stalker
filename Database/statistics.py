@@ -5,13 +5,25 @@ Created on Feb 22, 2017
 '''
 from Database import connections as dbconnect
 from Modules import misc
-#import os
-# REFERENCE FOR QUERIES
+
+####### REFERENCE FOR QUERIES
+
 # Open source Intel feeds 
 #'type' : 'Intel::ADDR'
 #'type' : 'Intel::DOMAIN'
 #'type' : 'Intel::FILE_HASH'
-# 'intelsource' : '[FireEye_ETP | Malc0de | ZeuS Tracker | Ransomware Tracker | Bambenek | Emerging_Threats]'
+#'type' : 'Intel::EMAIL'
+# 'intelsource' : 
+    # Malc0de
+    # ZeuSTracker
+    # RansomwareTracker
+    # Bambenek
+    # Emerging_Threats
+    # Snort_Talos
+    # MalwareDomains
+    # OpenPhish
+    # MalwareDomainList
+    # PhishTank
 # 'date' : ''
 # 'notes' : '[name | evilips | etpalert]'
 #
@@ -29,7 +41,50 @@ def dbStatistics():
     
     misc.cls()
     
+    print ("\n")
     
+    totalindicators = opensourcecoll.count()
+    typedomain = opensourcecoll.find({'type':'Intel::DOMAIN'}).count()
+    typeip = opensourcecoll.find({'type':'Intel::ADDR'}).count()
+    typehash = opensourcecoll.find({'type':'Intel::FILE_HASH'}).count()
+    typeemail = opensourcecoll.find({'type':'Intel::EMAIL'}).count()
+    feetptotal = opensourcecoll.find({'intelsource':'FireEye_ETP'}).count()
+    ongtotal = opensourcecoll.find({'intelsource':'ongisac'}).count()
+    malcodetotal = opensourcecoll.find({'intelsource':'Malc0de'}).count()
+    zeustotal = opensourcecoll.find({'intelsource':'ZeuSTracker'}).count()
+    rantracktotal = opensourcecoll.find({'intelsource':'RansomwareTracker'}).count()
+    bambetotal = opensourcecoll.find({'intelsource':'Bambenek'}).count()
+    ethreatstotal = opensourcecoll.find({'intelsource':'Emerging_Threats'}).count()
+    talostotal = opensourcecoll.find({'intelsource':'Snort_Talos'}).count()
+    mdomainstotal = opensourcecoll.find({'intelsource':'MalwareDomains'}).count()
+    ophishtotal = opensourcecoll.find({'intelsource':'OpenPhish'}).count()
+    mdomainlisttotal = opensourcecoll.find({'intelsource':'MalwareDomainList'}).count()
+    phishtanktotal = opensourcecoll.find({'intelsource':'PhishTank'}).count()
+    others = opensourcecoll.find({'intelsource':{"$nin":['FireEye_ETP','ongisac','Malc0de','ZeuSTracker','RansomwareTracker','Bambenek','Emerging_Threats',\
+                                                       'Snort_Talos','MalwareDomains','OpenPhish','MalwareDomainList','PhishTank']}}).count()
+    
+    print ("""
+  _________________________________________________________________________________________________
+::
+::                     ----- Threat Intelligence Info -------
+::
+:: Total Number of indicators: %s
+::
+:: Domains: %s   |   IPs: %s   |   Hash: %s   |   Email: %s
+::
+:: From FireEye ETP: %s   |   From ONG-ISAC: %s   
+:: ____________________________________________________________________________________________________
+:: 
+::                            Open Source Threat Feeds
+::                           --------------------------
+:: Malc0de: %s            |   ZeuS Tracker: %s     |   Ransomeware Tracker: %s   |   Bambenek: %s
+::
+:: Emerging Threats: %s   |   Talos Security: %s   |   Immortal Malware Domains: %s
+::
+:: OpenPhish: %s          |   Malware Domain List: %s   |   Phish Tank: %s   |   Others: %s
+:: _____________________________________________________________________________________________________
+""" % (totalindicators,typedomain,typeip,typehash,typeemail,feetptotal,ongtotal,malcodetotal,\
+       zeustotal,rantracktotal,bambetotal,ethreatstotal,talostotal,mdomainstotal,ophishtotal,mdomainlisttotal,phishtanktotal,others))
     
     feetptotal = feetpcoll.count() 
     typeurl = feetpcoll.find({'type':'url'}).count()
@@ -54,7 +109,7 @@ def dbStatistics():
     typescr = feetpcoll.find({'type':'scr'}).count()
      
     print ("""
-______________________________________________________________________________________________
+  ______________________________________________________________________________________________
 ::                                                                                  
 ::                  - FireEye Email Threat Prevention Info -                        
 ::                                                                                  
@@ -66,27 +121,13 @@ ________________________________________________________________________________
 ::                                                                                  
 :: Ace: %s   |  Rar: %s  |  Bz2: %s   |  bz: %s   |  Docm: %s  |  Scr: %s                   
 ::                                                                                  
-::_____________________________________________________________________________________________
+::________________________________________________________________________________________________
 """ % (feetptotal, typeurl, typezip, typejar, typedoc, typeexe, typehtm, type7zip, typecom, typepdf, \
        typedocx, typexls, typexlsx, typejs, typevbs, typeace, typerar, typebz2, typebz, typedocm, typescr))
     
     
     
-    print ("\n")
-    print ("####### OpenSource Threat Intel Collection Statistics #######\n")
     
-    opensourcetotal = opensourcecoll.count()
-    print ("Total number of records on Open Source Collection: ", opensourcetotal)
-    print ("\n")
-    
-    typeip = opensourcecoll.find({'type':'Intel::ADDR'}).count()
-    print ("Total number of IP addresses on Open Source Collection: ", typeip)
-    
-    typeurl = opensourcecoll.find({'type':'Intel::DOMAIN'}).count()
-    print ("Total number of Domain Names on Open Source Collection: ", typeurl)
-    
-    typehash = opensourcecoll.find({'type':'Intel::FILE_HASH'}).count()
-    print ("Total number of HASHES on Open Source Collection: ", typehash)
     
     print("\n")
     input("Press Enter to continue...")
