@@ -1,7 +1,7 @@
 import sys, os
 import urllib.request
 import urllib.parse
-import re
+import re, csv
 import datetime
 #from smtplib import line
 #from progressbar import ProgressBar
@@ -14,6 +14,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 # 2 - Create feed collection function
 # 3 - Add a feed fetch
 # 4 - Add feed to master feed processing
+# 5 - Add information to statistics (OPTIONAL)
 ############################## Global Variables #####################################
 ### STEP ONE
 ipPattern = re.compile('\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}')  # Match IP address RegEx
@@ -28,6 +29,7 @@ snorttalos_url = 'http://www.talosintelligence.com/feeds/ip-filter.blf'
 malwaredomains_url = 'http://mirror1.malwaredomains.com/files/immortal_domains.txt'
 maldomainlist_url = 'http://www.malwaredomainlist.com/hostslist/hosts.txt'
 openphish_url = 'https://openphish.com/feed.txt'
+phishtank_url = 'http://data.phishtank.com/data/online-valid.csv'
 
 today = datetime.datetime.now().strftime("%m-%d-%Y")
 
@@ -146,25 +148,45 @@ def openPhish( url ):
 
 #################### Malware Domain List DISABLED ################################################
 #
-#def malDomainList( url ):
-#	pass
-#	maldomaindic = {}
-#	justurl = re.compile('127\.0\.0\.1 (.*)')
-#	try:
-#		feed = urllib.request.urlopen(url)
-#		for line in feed:
-#			#print (line.strip().decode('utf-8'))
-#			if re.match(isComment,(line.strip().decode('utf-8'))):
-#				pass
-#			else:
-#				#cleandomain = line.strip().decode('utf-8')
-#				cleandomain = re.search(justurl, (line.strip().decode('utf-8')))
-#				#### WHY IS NOT WORKING???
-#				print(cleandomain.group())
-#	except Exception as e: print ("Something went wrong fetching the Malware Domain list feed\n", e)
-#	
+def malDomainList( url ):
+	maldomainlist = {}
+	home = re.compile('127\.0\.0\.1  ')
+	try:
+		feed = urllib.request.urlopen(url)
+		for line in feed:
+			#print (line.strip().decode('utf-8'))
+			if re.match(isComment,(line.strip().decode('utf-8'))):
+				continue
+			else:
+				line = (line.strip().decode('utf-8'))
+				line = (re.sub(home, 'http://', line))
+				cleanurl = urllib.parse.urlparse(line)
+				#print(cleanurl[1])
+				maldomainlist[cleanurl[1]] = {'type': 'Intel::DOMAIN', 'intelsource': ['MalwareDomainList'], 'date': today}
+				
+	except Exception as e: print ("Something went wrong fetching the Malware Domain list feed\n", e)
+	return (maldomainlist)
 #
-#
+################# Phish Tank ###########################
+def phishTank( url ):
+	phishtankdic = {}
+	headerline = re.compile('phish_id')
+	
+	try:
+		feed = urllib.request.urlopen(url)	
+		for line in feed:
+			if re.match(headerline, (line.strip().decode('utf-8'))):
+				# Ignore header line
+				continue
+			else:
+				line = line.strip().decode('utf-8')
+				linea =csv.reader(line.splitlines())
+				for element in linea:
+					cleanurl = urllib.parse.urlparse((element[1]))
+					phishtankdic[cleanurl[1]] = {'type': 'Intel::DOMAIN', 'intelsource': ['PhishTank'], 'date': today}
+	
+	except Exception as e: print ("Something went wrong fetching PhishTank feed\n", e)
+	return (phishtankdic)
 
 ############## MAIN FUNCTION FETCH ALL FEEDS AND RETURN A MASTER FEED DICTIONARY #########
 ## STEP THREE
@@ -203,23 +225,27 @@ def fetch_feeds():
 	print ("[DONE]")
 	
 	print ("\nFetching Malware Domains list from Malaredomainlist.com .....", end="")
-	#maldomainlist = malDomainList( maldomainlist_url)
-	print ("[DISABLED]")
+	maldomainlist = malDomainList( maldomainlist_url)
+	print ("[DONE]")
+	
+	print ("\nFetching PhishTank list of know phishing domains .....", end="")
+	phishtank = phishTank( phishtank_url )
+	print ("[DONE]")
 	
 	## SETP ONE - ADD NEW FEEDS HERE
-	return (master_feed(malcode,zeus,locky,bambenek,et,snort,malwaredomains,openphish))
+	return (master_feed(malcode,zeus,locky,bambenek,et,snort,malwaredomains,openphish,maldomainlist,phishtank))
 
 
 
 ################ FORGE A MASTER FEEDS AND INTO THE DARKNESS, BIND THEM ######################################
 ### STEP FOUR
-def master_feed (malcode,zeus,locky,bambenek,et,snort,malwaredomains,openphish): ## ADD NEW FEEDS HERE AND IN THE FEED LIST DOWN BELOW
+def master_feed (malcode,zeus,locky,bambenek,et,snort,malwaredomains,openphish,maldomainlist,phishtank): ## ADD NEW FEEDS HERE AND IN THE FEED LIST DOWN BELOW
 	masterfeed = {}
 	masterfeed.clear()
 	cachefile = '.cache/osintel'
 	
 		
-	feeds = [malcode, zeus, locky, bambenek, et, snort, malwaredomains,openphish] ## ADD NEW FEED HERE
+	feeds = [malcode, zeus, locky, bambenek, et, snort, malwaredomains,openphish,maldomainlist,phishtank] ## ADD NEW FEED HERE
 	print("\n______________________________________________________________________________________________________________________")
 	print ("\nDigesting Feeds....This might take some time if it's the first update, or if you haven't updated in a while!\n")
 	
