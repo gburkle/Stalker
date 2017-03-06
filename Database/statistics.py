@@ -62,6 +62,13 @@ def dbStatistics():
     phishtanktotal = opensourcecoll.find({'intelsource':'PhishTank'}).count()
     others = opensourcecoll.find({'intelsource':{"$nin":['FireEye_ETP','ongisac','Malc0de','ZeuSTracker','RansomwareTracker','Bambenek','Emerging_Threats',\
                                                        'Snort_Talos','MalwareDomains','OpenPhish','MalwareDomainList','PhishTank']}}).count()
+    otherTypes = opensourcecoll.find({'intelsource':{"$nin":['FireEye_ETP','ongisac','Malc0de','ZeuSTracker','RansomwareTracker','Bambenek','Emerging_Threats',\
+                                                       'Snort_Talos','MalwareDomains','OpenPhish','MalwareDomainList','PhishTank']}})
+    
+    inteltypes = set()
+    for t in otherTypes:
+        inteltypes.add(str(t['intelsource']))
+   
     
     print ("""
   _________________________________________________________________________________________________
@@ -81,10 +88,12 @@ def dbStatistics():
 ::
 :: Emerging Threats: %s   |   Talos Security: %s   |   Immortal Malware Domains: %s
 ::
-:: OpenPhish: %s          |   Malware Domain List: %s   |   Phish Tank: %s   |   Others: %s
+:: OpenPhish: %s          |   Malware Domain List: %s   |   Phish Tank: %s      
+::
+:: Others: %s : %s
 :: _____________________________________________________________________________________________________
 """ % (totalindicators,typedomain,typeip,typehash,typeemail,feetptotal,ongtotal,malcodetotal,\
-       zeustotal,rantracktotal,bambetotal,ethreatstotal,talostotal,mdomainstotal,ophishtotal,mdomainlisttotal,phishtanktotal,others))
+       zeustotal,rantracktotal,bambetotal,ethreatstotal,talostotal,mdomainstotal,ophishtotal,mdomainlisttotal,phishtanktotal,others,inteltypes))
     
     feetptotal = feetpcoll.count() 
     typeurl = feetpcoll.find({'type':'url'}).count()
@@ -107,7 +116,17 @@ def dbStatistics():
     typebz = feetpcoll.find({'type':'bz'}).count()
     typedocm = feetpcoll.find({'type':'docm'}).count()
     typescr = feetpcoll.find({'type':'scr'}).count()
-     
+    othersfe = feetpcoll.find({'type':{"$nin":['url','doc','exe','zip','jar','htm','7zip','com','pdf','docx','xls','xlsx','js',\
+                                               'vbs','ace','rar','bz2','bz','docm','scr']}}).count()
+                                               
+    otherFtypes = feetpcoll.find({'type':{"$nin":['url','doc','exe','zip','jar','htm','7zip','com','pdf','docx','xls','xlsx','js',\
+                                               'vbs','ace','rar','bz2','bz','docm','scr']}})
+                                               
+                                               
+    filetypes = set()
+    for t in otherFtypes:
+        filetypes.add(str(t['type']))                                           
+                                               
     print ("""
   ______________________________________________________________________________________________
 ::                                                                                  
@@ -119,11 +138,13 @@ def dbStatistics():
 ::                                                                                    
 :: Com: %s   |  Pdf: %s  |  docx: %s  |  xls: %s  |  xlsx: %s  |  js: %s   |  vbs: %s       
 ::                                                                                  
-:: Ace: %s   |  Rar: %s  |  Bz2: %s   |  bz: %s   |  Docm: %s  |  Scr: %s                   
+:: Ace: %s   |  Rar: %s  |  Bz2: %s   |  bz: %s   |  Docm: %s  |  Scr: %s   
+::
+:: Other: %s : %s         
 ::                                                                                  
 ::________________________________________________________________________________________________
 """ % (feetptotal, typeurl, typezip, typejar, typedoc, typeexe, typehtm, type7zip, typecom, typepdf, \
-       typedocx, typexls, typexlsx, typejs, typevbs, typeace, typerar, typebz2, typebz, typedocm, typescr))
+       typedocx, typexls, typexlsx, typejs, typevbs, typeace, typerar, typebz2, typebz, typedocm, typescr,othersfe,filetypes))
     
     
     
