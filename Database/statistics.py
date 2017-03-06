@@ -1,8 +1,3 @@
-'''
-Created on Feb 22, 2017
-
-@author: tesoro
-'''
 from Database import connections as dbconnect
 from Modules import misc
 
