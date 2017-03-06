@@ -1,8 +1,3 @@
-'''
-Created on Feb 24, 2017
-
-@author: tesoro
-'''
 #import urllib.parse
 import re, os, datetime
 from Modules import misc
