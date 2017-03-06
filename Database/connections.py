@@ -1,8 +1,3 @@
-'''
-Created on Feb 22, 2017
-
-@author: tesoro
-'''
 from pymongo import MongoClient
 import sys
 
