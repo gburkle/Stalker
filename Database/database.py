@@ -1,8 +1,3 @@
-'''
-Created on Feb 16, 2017
-
-@author: tesoro
-'''
 import os
 import datetime
 from  Intel_Feeds import open_source_lists as feeds
