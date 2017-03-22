@@ -231,7 +231,7 @@ def dbUpdate_FireeyeETP():
 def dbUpdate_plainList():
     plainlist = plainl.plainMenu() 
     
-    if plainlist != False: # FIST IF
+    if plainlist != False: # FIRST IF
         stats = 0
         coll =  dbconnect.opensourcelistsColl() 
         
