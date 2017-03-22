@@ -3,6 +3,7 @@ import urllib.request
 import urllib.parse
 import re, csv
 import datetime
+#from Intel_Feeds.plain_list import isitadomain
 #from smtplib import line
 #from progressbar import ProgressBar
 #import json
@@ -18,11 +19,15 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 ############################## Global Variables #####################################
 ### STEP ONE
 ipPattern = re.compile('\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}')  # Match IP address RegEx
+isitadomain = re.compile(r'^([a-z0-9]+(-[a-z0-9]+)*\.)+[a-z]{2,}$') # Match Domain name
 isComment = re.compile('#')
 
 malcode_url = 'http://malc0de.com/bl/IP_Blacklist.txt'
 zeus_url = 'https://zeustracker.abuse.ch/blocklist.php?download=ipblocklist'
-locky_url = 'https://ransomwaretracker.abuse.ch/downloads/LY_C2_IPBL.txt'
+zeus_url_domains = 'https://zeustracker.abuse.ch/blocklist.php?download=domainblocklist'
+#locky_url = 'https://ransomwaretracker.abuse.ch/downloads/LY_C2_IPBL.txt'
+abusedomains = 'https://ransomwaretracker.abuse.ch/downloads/RW_DOMBL.txt'
+abuseips = 'https://ransomwaretracker.abuse.ch/downloads/RW_IPBL.txt'
 bambenek_url = 'http://osint.bambenekconsulting.com/feeds/c2-ipmasterlist-high.txt'
 emergingthreats_url = 'https://rules.emergingthreats.net/blockrules/compromised-ips.txt'
 snorttalos_url = 'http://www.talosintelligence.com/feeds/ip-filter.blf'
@@ -50,29 +55,60 @@ def malcode_feed( url ):
 ####################################################################################
 
 ########################### ZeuS Tracker List #####################################
-def zeus_feed( url ):
+def zeus_feed( url, url2 ):
 	zeus = {}
 	try:
-		feed = urllib.request.urlopen(url)
-		for line in feed:
-			ip = re.match(ipPattern,(line.strip().decode('utf-8')))
-			if ip:
-				zeus[ip.group(0)] = { 'type' : 'Intel::ADDR', 'intelsource' : ['ZeuSTracker'], 'date' : today}
+		ip_feed = list(urllib.request.urlopen(url))		
+		domain_feed = list(urllib.request.urlopen(url2))
+		
+		allfeeds = ip_feed + domain_feed
+		
+		for line in allfeeds:
+			indicator = line.strip().decode('utf-8')
+			if not indicator:
+				# Ignore blank lines
+				continue
+			elif re.match(isComment,(indicator)):
+				continue
+			elif re.match(ipPattern,(indicator)):
+				zeus[indicator] = { 'type' : 'Intel::ADDR', 'intelsource' : ['ZeuSTracker'], 'date' : today}
+			elif re.match(isitadomain,(indicator)):
+				zeus[indicator] = { 'type' : 'Intel::DOMAIN', 'intelsource' : ['ZeuSTracker'], 'date' : today}
+			else:
+				continue
+				#print ("I dont know what this [%s] is!! It shall be ignored. " % indicator)
 	except Exception as e: print ("Something went wrong fetching ZeuS tracker list\n", e)
 	return (zeus)
 #####################################################################################
 
-################## Locky Ransomeware C2 URL Blocklist#####################################
-def locky_feed( url ):
-	locky = {}
+##################  Ransomeware Tracker abuse.ch C2 #####################################
+def abuse_feed( url, url2 ):
+	abuse = {}
+	
 	try:
-		feed = urllib.request.urlopen(url)
-		for line in feed:
-			ip = re.match(ipPattern,(line.strip().decode('utf-8')))
-			if ip:
-				locky[ip.group(0)] = { 'type' : 'Intel::ADDR', 'intelsource' : ['RansomwareTracker'], 'date' : today}
-	except Exception as e: print ("Something went wrong fetching Locky C2 list\n", e)
-	return (locky)
+		ip_feed = list(urllib.request.urlopen(url))		
+		domain_feed = list(urllib.request.urlopen(url2))
+		
+		allfeeds = ip_feed + domain_feed
+		
+		for line in allfeeds:
+			indicator = line.strip().decode('utf-8')
+			if not indicator:
+				# Ignore blank lines
+				continue
+			elif re.match(isComment,(indicator)):
+				continue
+			elif re.match(ipPattern,(indicator)):
+				abuse[indicator] = { 'type' : 'Intel::ADDR', 'intelsource' : ['RansomwareTracker'], 'date' : today}
+			elif re.match(isitadomain,(indicator)):
+				abuse[indicator] = { 'type' : 'Intel::DOMAIN', 'intelsource' : ['RansomwareTracker'], 'date' : today}
+			else:
+				continue
+				#print ("I dont know what this [%s] is!! It shall be ignored. " % indicator)
+			
+	except Exception as e: print ("Something went wrong fetching Abuse.ch Ransomeware Tracker list\n", e)
+	return (abuse)
+
 #####################################################################################
 
 ############ Bambenek Consulting Master Feed of known active C&C IPs ################
@@ -196,12 +232,12 @@ def fetch_feeds():
 	malcode = malcode_feed( malcode_url )
 	print ("[DONE]")
 
-	print ("\nFetching ZeuS IP tracker IP list ....", end="")
-	zeus = zeus_feed( zeus_url )
+	print ("\nFetching ZeuS IP tracker list of IPs and Domains ....", end="")
+	zeus = zeus_feed( zeus_url, zeus_url_domains )
 	print ("[DONE]")
 
-	print ("\nFetching Locky Ransomware C2 blocklist ......", end="")
-	locky = locky_feed( locky_url )
+	print ("\nFetching Abuse.ch Ransomware Tracker block lists ......", end="")
+	abuse = abuse_feed( abuseips, abusedomains )
 	print ("[DONE]")
 
 	print ("\nFetching Bambenek Master feed of known C&C IP addresses .... ", end="")
@@ -229,28 +265,29 @@ def fetch_feeds():
 	print ("[DONE]")
 	
 	print ("\nFetching PhishTank list of know phishing domains .....", end="")
-	phishtank = phishTank( phishtank_url )
-	print ("[DONE]")
+	#phishtank = phishTank( phishtank_url )
+	print ("[DISABLED]")
 	
 	## SETP ONE - ADD NEW FEEDS HERE
-	return (master_feed(malcode,zeus,locky,bambenek,et,snort,malwaredomains,openphish,maldomainlist,phishtank))
+	return (master_feed(malcode,zeus,abuse,bambenek,et,snort,malwaredomains,openphish,maldomainlist))
 
 
 
 ################ FORGE A MASTER FEEDS AND INTO THE DARKNESS, BIND THEM ######################################
 ### STEP FOUR
-def master_feed (malcode,zeus,locky,bambenek,et,snort,malwaredomains,openphish,maldomainlist,phishtank): ## ADD NEW FEEDS HERE AND IN THE FEED LIST DOWN BELOW
+def master_feed (malcode,zeus,abuse,bambenek,et,snort,malwaredomains,openphish,maldomainlist): ## ADD NEW FEEDS HERE AND IN THE FEED LIST DOWN BELOW
 	masterfeed = {}
 	masterfeed.clear()
 	cachefile = '.cache/osintel'
 	
 		
-	feeds = [malcode, zeus, locky, bambenek, et, snort, malwaredomains,openphish,maldomainlist,phishtank] ## ADD NEW FEED HERE
+	feeds = [malcode,zeus,abuse,bambenek,et,snort,malwaredomains,openphish,maldomainlist] ## ADD NEW FEED HERE
 	print("\n______________________________________________________________________________________________________________________")
-	print ("\nDigesting Feeds....This might take some time if it's the first update, or if you haven't updated in a while!\n")
+	print ("\nDigesting Feeds....This takes a LONG time if it's the first update, you haven't updated in a while, or you deleted the cache folder!\n")
 	
 	
 	### CHECK FOR CACHE FILE TO IMPROVE DIGEST SPEED
+	### IF YOU MAKE CHANGES DIRECTLY TO THE DATABASE MAKE SURE TO DELETE THE CACHE FOLDER!!!
 	if os.path.exists(cachefile):
 		#print ("cache file found!\n")
 		cachelist = {}
