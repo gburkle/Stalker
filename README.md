@@ -28,7 +28,7 @@ maldomainlist_url = 'http://www.malwaredomainlist.com/hostslist/hosts.txt'
 
 openphish_url = 'https://openphish.com/feed.txt'
 
-phishtank_url = 'http://data.phishtank.com/data/online-valid.csv'
+phishtank_url = 'http://data.phishtank.com/data/online-valid.csv' (DISABLED)
 
 All the information will be inserted into a local MongoDB database.
 At the same time I'm also going to collect data from FireEye ETP (cos it's going to be useful for me) and dump it on the same database.
