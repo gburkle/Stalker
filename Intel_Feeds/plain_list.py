@@ -1,8 +1,7 @@
-#import urllib.parse
+
 import re, os, datetime
 from Modules import misc
-#from Database import connections as dbconnect
-#sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+
 
 ### REGEX to find URL
 isitadomain = re.compile(r'^([a-z0-9]+(-[a-z0-9]+)*\.)+[a-z]{2,}$') 
@@ -99,16 +98,6 @@ def plainIngest():
         return (False)
         
     
-    
-    
-
-#def cls(): 
-    #try:
-    #    os.system('cls') # For windows
-    #except Exception as e: return
-#    try:
-#        os.system('clear') # For Linux
-#    except Exception: return
 
 if __name__ == '__main__':
     plainMenu()
