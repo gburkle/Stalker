@@ -6,25 +6,29 @@ Threat Intel and Incident Reponse
 First things first.
 Opensource threat intelligence collection from:
 
-Malc0de - http://malc0de.com/bl/IP_Blacklist.txt
+malcode_url = 'http://malc0de.com/bl/IP_Blacklist.txt'
 
-zeus Tracker -https://zeustracker.abuse.ch/blocklist.php?download=ipblocklist
+zeus_url = 'https://zeustracker.abuse.ch/blocklist.php?download=ipblocklist'
 
-Ransomeware - Tracker = https://ransomwaretracker.abuse.ch/downloads/LY_C2_IPBL.txt
+zeus_url_domains = 'https://zeustracker.abuse.ch/blocklist.php?download=domainblocklist'
 
-Bambenek - http://osint.bambenekconsulting.com/feeds/c2-ipmasterlist-high.txt
+abusedomains = 'https://ransomwaretracker.abuse.ch/downloads/RW_DOMBL.txt'
 
-Emerging Threats - https://rules.emergingthreats.net/blockrules/compromised-ips.txt
+abuseips = 'https://ransomwaretracker.abuse.ch/downloads/RW_IPBL.txt'
 
-Talos Intelligence (Snort) - http://www.talosintelligence.com/feeds/ip-filter.blf 
+bambenek_url = 'http://osint.bambenekconsulting.com/feeds/c2-ipmasterlist-high.txt'
 
-Malwaredomains - http://mirror1.malwaredomains.com/files/immortal_domains.txt 
+emergingthreats_url = 'https://rules.emergingthreats.net/blockrules/compromised-ips.txt'
 
-OpenPhish - https://openphish.com/feed.txt
+snorttalos_url = 'http://www.talosintelligence.com/feeds/ip-filter.blf'
 
-Malware Domains List - http://www.malwaredomainlist.com/hostslist/hosts.txt
- 
-Phish Tank - http://data.phishtank.com/data/online-valid.csv
+malwaredomains_url = 'http://mirror1.malwaredomains.com/files/immortal_domains.txt'
+
+maldomainlist_url = 'http://www.malwaredomainlist.com/hostslist/hosts.txt'
+
+openphish_url = 'https://openphish.com/feed.txt'
+
+phishtank_url = 'http://data.phishtank.com/data/online-valid.csv' (DISABLED)
 
 All the information will be inserted into a local MongoDB database.
 At the same time I'm also going to collect data from FireEye ETP (cos it's going to be useful for me) and dump it on the same database.
