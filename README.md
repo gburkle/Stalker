@@ -7,16 +7,27 @@ First things first.
 Opensource threat intelligence collection from:
 
 malcode_url = 'http://malc0de.com/bl/IP_Blacklist.txt'
+
 zeus_url = 'https://zeustracker.abuse.ch/blocklist.php?download=ipblocklist'
+
 zeus_url_domains = 'https://zeustracker.abuse.ch/blocklist.php?download=domainblocklist'
+
 abusedomains = 'https://ransomwaretracker.abuse.ch/downloads/RW_DOMBL.txt'
+
 abuseips = 'https://ransomwaretracker.abuse.ch/downloads/RW_IPBL.txt'
+
 bambenek_url = 'http://osint.bambenekconsulting.com/feeds/c2-ipmasterlist-high.txt'
+
 emergingthreats_url = 'https://rules.emergingthreats.net/blockrules/compromised-ips.txt'
+
 snorttalos_url = 'http://www.talosintelligence.com/feeds/ip-filter.blf'
+
 malwaredomains_url = 'http://mirror1.malwaredomains.com/files/immortal_domains.txt'
+
 maldomainlist_url = 'http://www.malwaredomainlist.com/hostslist/hosts.txt'
+
 openphish_url = 'https://openphish.com/feed.txt'
+
 phishtank_url = 'http://data.phishtank.com/data/online-valid.csv'
 
 All the information will be inserted into a local MongoDB database.
