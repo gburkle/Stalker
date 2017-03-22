@@ -1,8 +1,10 @@
 import os,re
 from Database import connections as dbconnect
+from Modules import misc
+from Stalk import stalk_deep as deep
 
 def spMenu():
-    cls()
+    misc.cls()
     def options():
         print ("""
 ###### TYPES OF PREY ########
@@ -16,8 +18,9 @@ def spMenu():
 
 [1] Basic Stalk.
 [2] Multiple Prey.
+[3] Deep Stalk. 
 
-[3] Back to main menu. 
+[4] Back to main menu. 
 """)
     options()
     while True:
@@ -33,6 +36,9 @@ def spMenu():
             multiplePrey()
             options()
         elif option == 3:
+            deep.deepMenu()
+            options() 
+        elif option == 4:
             break
         else:
             print ("That doesn't seem to be an option. \n")
@@ -169,17 +175,10 @@ def stalkPrey():
 
         print ("\n")
         input("Press Enter to Continue...")
-        cls()
+        misc.cls()
     except Exception as e: print ("Something is not right with that prey!", e)
     
 
-def cls(): 
-    #try:
-    #    os.system('cls') # For windows
-    #except Exception as e: return
-    try:
-        os.system('clear') # For Linux
-    except Exception: return
 
 if __name__ == '__main__':
     pass
