@@ -1,8 +1,6 @@
 # Stalker
 Threat Intel and Incident Reponse
 
-** WORK VERY MUCH IN PROGRESS **
-
 First things first.
 Opensource threat intelligence collection from:
 
